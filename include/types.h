@@ -34,6 +34,7 @@ struct RequestDispatcher
 struct Device
 {
   u32 number;
+  u8 is_free;
 };
 
 struct Generator
@@ -47,6 +48,7 @@ struct MassServiceSystem
   struct RequestDispatcher r_disp;
   struct Buffer buffer;
   struct Device* devices;
+  size_t devices_len;
 };
 
 struct Environment

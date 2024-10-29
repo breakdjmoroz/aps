@@ -90,3 +90,20 @@ void buffer_extract(struct Buffer const* buffer, struct Request const* request, 
   }
 }
 
+int select_device(const struct MassServiceSystem const* mss)
+{
+  size_t i = 0;
+
+  if (mss == NULL)
+  {
+    return -1;
+  }
+
+  while ((i < mss->devices_len) && !(mss->devices[i]->is_free))
+  {
+    ++i;
+  }
+
+  return i;
+}
+
