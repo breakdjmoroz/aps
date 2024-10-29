@@ -48,17 +48,18 @@ void buffer_insert_with_rejected(struct Buffer const* buffer, const struct Reque
   }
 }
 
-void buffer_extract(struct Buffer const* buffer, struct Request const* request)
+void buffer_extract(struct Buffer const* buffer, struct Request const* request, int* err_num)
 {
   struct Request tmp_request = NULL;
   u32 max_priority = 0;
   u32 current_priority = 0;
   size_t request_index = 0;
+  int err = 0;
   size_t i;
 
   if (buffer == NULL || request == NULL)
   {
-    return -1;
+    err = -1;
   }
 
   for (i = 0; i < buffer->size; ++i)
@@ -78,5 +79,10 @@ void buffer_extract(struct Buffer const* buffer, struct Request const* request)
   }
 
   request = buffer->requests[request_index];
+
+  if (err_num != NULL)
+  {
+    *err_num = err;
+  }
 }
 

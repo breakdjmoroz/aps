@@ -8,6 +8,6 @@ void buffer_insert_with_rejected(
     struct Request const*, int const*
     );
 int buffer_insert(struct Buffer const*, const struct Request const*);
-void buffer_extract(struct Buffer const*, struct Request const*);
+void buffer_extract(struct Buffer const*, struct Request const*, int*);
 
 #endif
