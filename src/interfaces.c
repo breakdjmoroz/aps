@@ -51,7 +51,6 @@ void buffer_insert_with_rejected(struct Buffer const* buffer, const struct Reque
 
 void buffer_extract(struct Buffer const* buffer, struct Request const* request, int* err_num)
 {
-  struct Request tmp_request = NULL;
   u32 max_priority = 0;
   u32 current_priority = 0;
   size_t current_index = 0;
