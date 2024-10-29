@@ -38,6 +38,7 @@ void buffer_insert_with_rejected(struct Buffer const* buffer, const struct Reque
       }
     }
 
+    //TODO: Fill in_request->buf_time
     buffer->requests[current_index] = in_request;
 
     current_index = (current_index + 1) % buffer->size;
@@ -53,6 +54,7 @@ void buffer_extract(struct Buffer const* buffer, struct Request const* request, 
   struct Request tmp_request = NULL;
   u32 max_priority = 0;
   u32 current_priority = 0;
+  size_t current_index = 0;
   size_t request_index = 0;
   int err = 0;
   size_t i;
@@ -64,17 +66,20 @@ void buffer_extract(struct Buffer const* buffer, struct Request const* request, 
 
   for (i = 0; i < buffer->size; ++i)
   {
+    current_index = (buffer->current_index + i) % buffer->size;
     current_priority =
-      buffer->requests[(buffer->current_index + i) % buffer->size].gen_number;
+      buffer->requests[current_index]->gen_number;
 
     if (current_priority > max_priority)
     {
       max_priority = current_priority;
-      request_index = (buffer->current_index + i) % buffer->size;
+      request_index = current_index;
     }
-    else if (current_priority == max_priority)
+    else if ((current_priority == max_priority) &&
+        (buffer->requests[current_index]->buf_time <
+         buffer->requests[request_index]->buf_time))
     {
-      //TODO: select the oldest request as the most priorited
+      request_index = current_index;
     }
   }
 

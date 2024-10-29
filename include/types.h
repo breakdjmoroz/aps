@@ -22,6 +22,8 @@ struct Request
 {
   u32 gen_number;
   u32 gen_time;
+  u32 buf_time;
+  u32 dev_time;
   u8 is_active;
 };
 
