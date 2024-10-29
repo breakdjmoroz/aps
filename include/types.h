@@ -13,7 +13,7 @@ struct BufferDispatcher
 
 static struct Buffer
 {
-  struct Request* requests;
+  struct Request** requests;
   size_t size;
   size_t current_index;
 };
