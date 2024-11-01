@@ -1,20 +1,24 @@
+#include <stdlib.h>
 #include <stddef.h>
 #include "interfaces.h"
 
-int buffer_insert(struct Buffer const* buffer, const struct Request const* request)
+int buffer_insert(struct Buffer* const buffer, const struct Request* const request)
 {
   int err = 0;
-  struct Request* rejected_request;
+  struct Request rejected_request;
 
-  buffer_insert_with_rejected(buffer, request, rejected_request, &err);
+  buffer_insert_with_rejected(buffer, request, &rejected_request, &err);
 
-  free(rejected_request);
+  free(&rejected_request);
 
   return err;
 }
 
-void buffer_insert_with_rejected(struct Buffer const* buffer, const struct Request const* in_request,
-    struct Request const* rejected_request, int const* err_num)
+void buffer_insert_with_rejected(
+    struct Buffer* const buffer,
+    const struct Request* const in_request,
+    struct Request* rejected_request,
+    int* const err_num)
 {
   int err = 0;
   size_t current_index = buffer->current_index;
@@ -49,7 +53,7 @@ void buffer_insert_with_rejected(struct Buffer const* buffer, const struct Reque
   }
 }
 
-void buffer_extract(struct Buffer const* buffer, struct Request const* request, int* err_num)
+void buffer_extract(struct Buffer* const buffer, struct Request* request, int* const err_num)
 {
   u32 max_priority = 0;
   u32 current_priority = 0;
@@ -90,7 +94,7 @@ void buffer_extract(struct Buffer const* buffer, struct Request const* request, 
   }
 }
 
-int select_device(const struct MassServiceSystem const* mss)
+size_t select_device(const struct MassServiceSystem* const mss)
 {
   size_t i = 0;
 

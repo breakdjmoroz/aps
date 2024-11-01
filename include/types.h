@@ -1,6 +1,7 @@
 #ifndef TYPES
 #define TYPES
 
+#include <stddef.h>
 #include <inttypes.h>
 
 typedef uint8_t u8;
@@ -11,7 +12,7 @@ struct BufferDispatcher
 {
 };
 
-static struct Buffer
+struct Buffer
 {
   struct Request** requests;
   size_t size;
@@ -47,7 +48,7 @@ struct MassServiceSystem
   struct BufferDispatcher b_disp;
   struct RequestDispatcher r_disp;
   struct Buffer buffer;
-  struct Device* devices;
+  struct Device** devices;
   size_t devices_len;
 };
 
