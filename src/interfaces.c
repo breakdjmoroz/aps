@@ -111,3 +111,9 @@ size_t select_device(const struct MassServiceSystem* const mss)
   return i;
 }
 
+struct Event get_next_event()
+{
+}
+void generate_requests()
+{
+}

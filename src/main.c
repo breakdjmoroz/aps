@@ -7,17 +7,15 @@ int main()
 
   for(;;)
   {
-    Event next_event = get_next_event();
+    struct Event next_event = get_next_event();
 
-    switch(next_event)
+    switch(next_event.type)
     {
-      case get_request:
+      case GET_EVENT:
         break;
-      case device_is_free:
+      case DEVICE_FREE:
         break;
-      case stop_modeling:
-        break;
-      default:
+      case STOP_MODELING:
         break;
     }
   }

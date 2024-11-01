@@ -12,4 +12,7 @@ void buffer_extract(struct Buffer* const, struct Request*, int* const);
 
 size_t select_device(const struct MassServiceSystem* const);
 
+struct Event get_next_event();
+void generate_requests();
+
 #endif

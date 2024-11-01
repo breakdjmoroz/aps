@@ -57,9 +57,16 @@ struct Environment
   struct Generator* generators;
 };
 
+enum EVENT_TYPE
+{
+  GET_EVENT,
+  DEVICE_FREE,
+  STOP_MODELING,
+};
+
 struct Event
 {
-  u8 type;
+  enum EVENT_TYPE type;
   u8 is_acitve;
   u32 time_in_sec;
 };
