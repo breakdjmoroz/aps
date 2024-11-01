@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include "interfaces.h"
 
 int buffer_insert(struct Buffer* const buffer, const struct Request* const request)
@@ -111,9 +112,26 @@ size_t select_device(const struct MassServiceSystem* const mss)
   return i;
 }
 
+struct MassServiceSystem new_mss()
+{
+}
+
 struct Event get_next_event()
 {
 }
+
 void generate_requests()
+{
+}
+
+void generate_request_for(u32 generator_number)
+{
+}
+
+bool have_free_device()
+{
+}
+
+void serve_a_request()
 {
 }

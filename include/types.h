@@ -66,9 +66,10 @@ enum EVENT_TYPE
 
 struct Event
 {
+  void* data;
   enum EVENT_TYPE type;
-  u8 is_acitve;
   u32 time_in_sec;
+  u8 is_acitve;
 };
 
 struct EventCalendar
