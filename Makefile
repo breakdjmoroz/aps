@@ -10,3 +10,6 @@ all:
 
 clean:
 	rm $(BINARY)/*
+
+run:
+	$(BINARY)/$(NAME)
