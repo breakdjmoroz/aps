@@ -32,19 +32,19 @@ void buffer_insert_with_rejected(
   else
   {
     //Cycle insert rule
-    while (buffer->requests[current_index]->is_active)
+    while (buffer->requests[current_index].is_active)
     {
       current_index = (current_index + 1) % buffer->size;
       //Reject under pointer
       if (current_index == buffer->current_index)
       {
-        rejected_request = buffer->requests[current_index];
-        rejected_request->is_active = 0;
+        *rejected_request = buffer->requests[current_index];
+        rejected_request->is_active = false;
       }
     }
 
     //TODO: Fill in_request->buf_time
-    buffer->requests[current_index] = in_request;
+    buffer->requests[current_index] = *in_request;
 
     current_index = (current_index + 1) % buffer->size;
   }
@@ -72,7 +72,7 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
   {
     current_index = (buffer->current_index + i) % buffer->size;
     current_priority =
-      buffer->requests[current_index]->gen_number;
+      buffer->requests[current_index].gen_number;
 
     if (current_priority > max_priority)
     {
@@ -80,14 +80,15 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
       request_index = current_index;
     }
     else if ((current_priority == max_priority) &&
-        (buffer->requests[current_index]->buf_time <
-         buffer->requests[request_index]->buf_time))
+        (buffer->requests[current_index].buf_time <
+         buffer->requests[request_index].buf_time))
     {
       request_index = current_index;
     }
   }
 
-  request = buffer->requests[request_index];
+  *request = buffer->requests[request_index];
+  buffer->requests[request_index].is_active = false;
 
   if (err_num != NULL)
   {
@@ -104,7 +105,7 @@ size_t select_device(const struct MassServiceSystem* const mss)
     return -1;
   }
 
-  while ((i < mss->devices_len) && !(mss->devices[i]->is_free))
+  while ((i < mss->devices_len) && !(mss->devices[i].is_free))
   {
     ++i;
   }
@@ -112,39 +113,17 @@ size_t select_device(const struct MassServiceSystem* const mss)
   return i;
 }
 
-bool allocate_devices(struct Device** devices, size_t devices_len)
+void  allocate_devices(struct Device* devices, size_t devices_len)
 {
   size_t i = 0;
-  bool is_allocated = false;
-
   if (devices != NULL)
   {
-    is_allocated = true;
-
-    for(i = 0; is_allocated && (i < devices_len); ++i)
+    for(i = 0; i < devices_len; ++i)
     {
-      devices[i] = (struct Device*)malloc(sizeof(struct Device));
-      if (devices[i] != NULL)
-      {
-        (devices[i])->number = (u32)i;
-        (devices[i])->is_free = true;
-      }
-      else
-      {
-        is_allocated = false;
-      }
-    }
-
-    if (!is_allocated)
-    {
-      for(i = i - 1; i >= 0; --i)
-      {
-        free(devices[i]);
-      }
+      devices[i].number = (u32)i;
+      devices[i].is_free = true;
     }
   }
-
-  return is_allocated;
 }
 
 bool allocate_buffer(struct Buffer* buffer, size_t buf_size)
@@ -154,18 +133,20 @@ bool allocate_buffer(struct Buffer* buffer, size_t buf_size)
 
   if (buffer != NULL)
   {
-    buffer->requests = (struct Request**)malloc(buf_size * sizeof(struct Request*));
+    buffer->requests = (struct Request*)malloc(buf_size * sizeof(struct Request));
+
     if (buffer->requests != NULL)
     {
       is_allocated = true;
-    }
 
-    buffer->size = buf_size;
-    for(i = 0; i < buf_size; ++i)
-    {
-      buffer->requests[i] = NULL;
+      buffer->size = buf_size;
+      buffer->current_index = 0;
+
+      for(i = 0; i < buf_size; ++i)
+      {
+        buffer->requests[i].is_active = false;
+      }
     }
-    buffer->current_index = 0;
   }
 
   return is_allocated;
@@ -180,14 +161,10 @@ struct MassServiceSystem* new_mss(size_t devices_len, size_t buf_size)
   if (mss != NULL)
   {
     mss->devices_len=devices_len;
-    mss->devices = (struct Device**)malloc(sizeof(struct Device*) * devices_len);
+    mss->devices = (struct Device*)malloc(sizeof(struct Device*) * devices_len);
     if (mss->devices != NULL)
     {
-      is_allocated = allocate_devices(mss->devices, devices_len);
-      if (!is_allocated)
-      {
-        free(mss->devices);
-      }
+      allocate_devices(mss->devices, devices_len);
     }
     else
     {
@@ -227,37 +204,21 @@ struct EventCalendar* new_calendar(size_t events_len)
   if (calendar != NULL)
   {
     calendar->events_len=events_len;
-    calendar->events = (struct Event**)malloc(sizeof(struct Event*) * events_len);
+    calendar->events = (struct Event*)malloc(sizeof(struct Event) * events_len);
     if (calendar->events != NULL)
     {
       for(i = 0; is_allocated && (i < events_len); ++i)
       {
-        calendar->events[i] = (struct Event*)malloc(sizeof(struct Event));
-        if (calendar->events[i] != NULL)
-        {
-          (calendar->events[i])->data = NULL;
-          (calendar->events[i])->type = UNDEFINED;
-          (calendar->events[i])->time_in_sec = 0;
-          (calendar->events[i])->is_active = false;
-        }
-        else
-        {
-          is_allocated = false;
-        }
-      }
-
-      if (!is_allocated)
-      {
-        for(i = i - 1; i >= 0; --i)
-        {
-          free(calendar->events[i]);
-        }
-        free(calendar->events);
+        calendar->events[i].data = NULL;
+        calendar->events[i].type = UNDEFINED;
+        calendar->events[i].time_in_sec = 0;
+        calendar->events[i].is_active = false;
       }
     }
     else
     {
       is_allocated = false;
+      free(calendar->events);
     }
 
     if (!is_allocated)

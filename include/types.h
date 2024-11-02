@@ -10,7 +10,7 @@ typedef uint32_t u32;
 
 struct Buffer
 {
-  struct Request** requests;
+  struct Request* requests;
   size_t size;
   size_t current_index;
 };
@@ -38,7 +38,7 @@ struct Generator
 struct MassServiceSystem
 {
   struct Buffer* buffer;
-  struct Device** devices;
+  struct Device* devices;
   size_t devices_len;
 };
 
@@ -65,7 +65,7 @@ struct Event
 
 struct EventCalendar
 {
-  struct Event** events;
+  struct Event* events;
   size_t events_len;
 };
 
