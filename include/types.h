@@ -49,6 +49,7 @@ struct Environment
 
 enum EVENT_TYPE
 {
+  UNDEFINED,
   GET_EVENT,
   DEVICE_FREE,
   STOP_MODELING,

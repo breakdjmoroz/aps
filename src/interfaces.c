@@ -162,6 +162,58 @@ struct MassServiceSystem* new_mss(size_t devices_len)
   return mss;
 }
 
+struct EventCalendar* new_calendar(size_t events_len)
+{
+  size_t i = 0;
+  bool is_allocated = true;
+  struct EventCalendar* calendar = (struct EventCalendar*)malloc(sizeof(struct EventCalendar));
+
+  if (calendar != NULL)
+  {
+    calendar->events_len=events_len;
+    calendar->events = (struct Event**)malloc(sizeof(struct Event*) * events_len);
+    if (calendar->events != NULL)
+    {
+      for(i = 0; is_allocated && (i < events_len); ++i)
+      {
+        calendar->events[i] = (struct Event*)malloc(sizeof(struct Event));
+        if (calendar->events[i] != NULL)
+        {
+          (calendar->events[i])->data = NULL;
+          (calendar->events[i])->type = UNDEFINED;
+          (calendar->events[i])->time_in_sec = 0;
+          (calendar->events[i])->is_active = false;
+        }
+        else
+        {
+          is_allocated = false;
+        }
+      }
+
+      if (!is_allocated)
+      {
+        for(i = i - 1; i >= 0; --i)
+        {
+          free(calendar->events[i]);
+        }
+        free(calendar->events);
+      }
+    }
+    else
+    {
+      is_allocated = false;
+    }
+
+    if (!is_allocated)
+    {
+        free(calendar);
+        calendar = NULL;
+    }
+  }
+
+  return calendar;
+}
+
 struct Event get_next_event()
 {
 }

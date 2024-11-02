@@ -17,6 +17,7 @@ void buffer_extract(struct Buffer* const, struct Request*, int* const);
 size_t select_device(const struct MassServiceSystem* const);
 
 struct MassServiceSystem* new_mss(size_t);
+struct EventCalendar* new_calendar(size_t);
 
 struct Event get_next_event();
 void generate_requests();

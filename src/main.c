@@ -4,11 +4,13 @@
 #include "interfaces.h"
 
 #define N_DEVICES (5)
+#define N_EVENTS (16)
 
 int main()
 {
-  struct MassServiceSystem* mss = new_mss(N_DEVICES);
   bool is_modeling = true;
+  struct MassServiceSystem* mss = new_mss(N_DEVICES);
+  struct EventCalendar* calendar = new_calendar(N_EVENTS);
 
   generate_requests();
 
