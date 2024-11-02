@@ -207,7 +207,7 @@ struct EventCalendar* new_calendar(size_t events_len)
     calendar->events = (struct Event*)malloc(sizeof(struct Event) * events_len);
     if (calendar->events != NULL)
     {
-      for(i = 0; is_allocated && (i < events_len); ++i)
+      for(i = 0; i < events_len; ++i)
       {
         calendar->events[i].data = NULL;
         calendar->events[i].type = UNDEFINED;
@@ -217,25 +217,44 @@ struct EventCalendar* new_calendar(size_t events_len)
     }
     else
     {
-      is_allocated = false;
-      free(calendar->events);
-    }
-
-    if (!is_allocated)
-    {
-        free(calendar);
-        calendar = NULL;
+      free(calendar);
+      calendar = NULL;
     }
   }
 
   return calendar;
 }
 
-struct Event get_next_event()
+struct Environment* new_env(size_t gen_num)
+{
+  size_t i = 0;
+  struct Environment* env = (struct Environment*)malloc(sizeof(struct Environment));
+
+  if (env != NULL)
+  {
+    env->generators = (struct Generator*)malloc(gen_num * sizeof(struct Generator));
+    if (env->generators != NULL)
+    {
+      for(i = 0; i < gen_num; ++i)
+      {
+        env->generators[i].number = i;
+      }
+    }
+    else
+    {
+      free(env);
+      env = NULL;
+    }
+  }
+
+  return env;
+}
+
+void generate_requests(const struct Environment* const env, struct EventCalendar* calendar)
 {
 }
 
-void generate_requests()
+struct Event get_next_event()
 {
 }
 
@@ -243,6 +262,7 @@ void generate_request_for(u32 generator_number)
 {
 }
 
+/*TODO m.b. you can use 'select_device' for this purpose*/
 bool have_free_device()
 {
 }

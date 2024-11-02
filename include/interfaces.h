@@ -18,9 +18,11 @@ size_t select_device(const struct MassServiceSystem* const);
 
 struct MassServiceSystem* new_mss(size_t, size_t);
 struct EventCalendar* new_calendar(size_t);
+struct Environment* new_env(size_t);
+
+void generate_requests(const struct Environment* const, struct EventCalendar*);
 
 struct Event get_next_event();
-void generate_requests();
 void generate_request_for(u32);
 
 bool have_free_device();

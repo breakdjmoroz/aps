@@ -45,6 +45,7 @@ struct MassServiceSystem
 struct Environment
 {
   struct Generator* generators;
+  size_t generators_len;
 };
 
 enum EVENT_TYPE

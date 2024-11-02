@@ -3,15 +3,17 @@
 #include "types.h"
 #include "interfaces.h"
 
-#define N_DEVICES (5)
-#define N_EVENTS (16)
-#define BUF_SIZE (8)
+#define N_DEVICES     (5)
+#define N_EVENTS      (16)
+#define N_GENERATORS  (6)
+#define BUF_SIZE      (8)
 
 int main()
 {
   bool is_modeling = true;
   struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
   struct EventCalendar* calendar = new_calendar(N_EVENTS);
+  struct Environment* env = new_env(N_GENERATORS);
 
   generate_requests();
 
