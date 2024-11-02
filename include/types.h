@@ -3,14 +3,10 @@
 
 #include <stddef.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
-typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
-
-struct BufferDispatcher
-{
-};
 
 struct Buffer
 {
@@ -25,17 +21,13 @@ struct Request
   u32 gen_time;
   u32 buf_time;
   u32 dev_time;
-  u8 is_active;
-};
-
-struct RequestDispatcher
-{
+  bool is_active;
 };
 
 struct Device
 {
   u32 number;
-  u8 is_free;
+  bool is_free;
 };
 
 struct Generator
@@ -45,8 +37,6 @@ struct Generator
 
 struct MassServiceSystem
 {
-  struct BufferDispatcher b_disp;
-  struct RequestDispatcher r_disp;
   struct Buffer buffer;
   struct Device** devices;
   size_t devices_len;
@@ -69,7 +59,7 @@ struct Event
   void* data;
   enum EVENT_TYPE type;
   u32 time_in_sec;
-  u8 is_acitve;
+  bool is_acitve;
 };
 
 struct EventCalendar

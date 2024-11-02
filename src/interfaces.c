@@ -112,8 +112,54 @@ size_t select_device(const struct MassServiceSystem* const mss)
   return i;
 }
 
-struct MassServiceSystem new_mss()
+struct MassServiceSystem* new_mss(size_t devices_len)
 {
+  size_t i = 0;
+  bool is_allocated = true;
+  struct MassServiceSystem* mss = (struct MassServiceSystem*)malloc(sizeof(struct MassServiceSystem));
+
+  if (mss != NULL)
+  {
+    mss->devices_len=devices_len;
+    mss->devices = (struct Device**)malloc(sizeof(struct Device*) * devices_len);
+    if (mss->devices != NULL)
+    {
+      for(i = 0; is_allocated && (i < devices_len); ++i)
+      {
+        mss->devices[i] = (struct Device*)malloc(sizeof(struct Device));
+        if (mss->devices[i] != NULL)
+        {
+          (mss->devices[i])->number = (u32)i;
+          (mss->devices[i])->is_free = true;
+        }
+        else
+        {
+          is_allocated = false;
+        }
+      }
+
+      if (!is_allocated)
+      {
+        for(i = i - 1; i >= 0; --i)
+        {
+          free(mss->devices[i]);
+        }
+        free(mss->devices);
+      }
+    }
+    else
+    {
+      is_allocated = false;
+    }
+
+    if (!is_allocated)
+    {
+        free(mss);
+        mss = NULL;
+    }
+  }
+
+  return mss;
 }
 
 struct Event get_next_event()
