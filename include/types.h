@@ -37,7 +37,7 @@ struct Generator
 
 struct MassServiceSystem
 {
-  struct Buffer buffer;
+  struct Buffer* buffer;
   struct Device** devices;
   size_t devices_len;
 };
@@ -60,12 +60,13 @@ struct Event
   void* data;
   enum EVENT_TYPE type;
   u32 time_in_sec;
-  bool is_acitve;
+  bool is_active;
 };
 
 struct EventCalendar
 {
-  struct Event* events;
+  struct Event** events;
+  size_t events_len;
 };
 
 struct Model

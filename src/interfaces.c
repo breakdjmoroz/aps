@@ -112,7 +112,66 @@ size_t select_device(const struct MassServiceSystem* const mss)
   return i;
 }
 
-struct MassServiceSystem* new_mss(size_t devices_len)
+bool allocate_devices(struct Device** devices, size_t devices_len)
+{
+  size_t i = 0;
+  bool is_allocated = false;
+
+  if (devices != NULL)
+  {
+    is_allocated = true;
+
+    for(i = 0; is_allocated && (i < devices_len); ++i)
+    {
+      devices[i] = (struct Device*)malloc(sizeof(struct Device));
+      if (devices[i] != NULL)
+      {
+        (devices[i])->number = (u32)i;
+        (devices[i])->is_free = true;
+      }
+      else
+      {
+        is_allocated = false;
+      }
+    }
+
+    if (!is_allocated)
+    {
+      for(i = i - 1; i >= 0; --i)
+      {
+        free(devices[i]);
+      }
+    }
+  }
+
+  return is_allocated;
+}
+
+bool allocate_buffer(struct Buffer* buffer, size_t buf_size)
+{
+  size_t i = 0;
+  bool is_allocated = false;
+
+  if (buffer != NULL)
+  {
+    buffer->requests = (struct Request**)malloc(buf_size * sizeof(struct Request*));
+    if (buffer->requests != NULL)
+    {
+      is_allocated = true;
+    }
+
+    buffer->size = buf_size;
+    for(i = 0; i < buf_size; ++i)
+    {
+      buffer->requests[i] = NULL;
+    }
+    buffer->current_index = 0;
+  }
+
+  return is_allocated;
+}
+
+struct MassServiceSystem* new_mss(size_t devices_len, size_t buf_size)
 {
   size_t i = 0;
   bool is_allocated = true;
@@ -124,32 +183,29 @@ struct MassServiceSystem* new_mss(size_t devices_len)
     mss->devices = (struct Device**)malloc(sizeof(struct Device*) * devices_len);
     if (mss->devices != NULL)
     {
-      for(i = 0; is_allocated && (i < devices_len); ++i)
-      {
-        mss->devices[i] = (struct Device*)malloc(sizeof(struct Device));
-        if (mss->devices[i] != NULL)
-        {
-          (mss->devices[i])->number = (u32)i;
-          (mss->devices[i])->is_free = true;
-        }
-        else
-        {
-          is_allocated = false;
-        }
-      }
-
+      is_allocated = allocate_devices(mss->devices, devices_len);
       if (!is_allocated)
       {
-        for(i = i - 1; i >= 0; --i)
-        {
-          free(mss->devices[i]);
-        }
         free(mss->devices);
       }
     }
     else
     {
       is_allocated = false;
+    }
+
+    if (is_allocated)
+    {
+      mss->buffer = (struct Buffer*)malloc(sizeof(struct Buffer));
+      if (mss->buffer != NULL)
+      {
+        is_allocated = allocate_buffer(mss->buffer, buf_size);
+
+        if (!is_allocated)
+        {
+          free(mss->buffer);
+        }
+      }
     }
 
     if (!is_allocated)

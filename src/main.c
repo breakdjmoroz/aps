@@ -5,11 +5,12 @@
 
 #define N_DEVICES (5)
 #define N_EVENTS (16)
+#define BUF_SIZE (8)
 
 int main()
 {
   bool is_modeling = true;
-  struct MassServiceSystem* mss = new_mss(N_DEVICES);
+  struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
   struct EventCalendar* calendar = new_calendar(N_EVENTS);
 
   generate_requests();
@@ -31,12 +32,12 @@ int main()
         }
         else
         {
-          buffer_insert(&(mss->buffer), &request);
+          buffer_insert(mss->buffer, &request);
         }
         break;
       case DEVICE_FREE:
         int err;
-        buffer_extract(&(mss->buffer), &request, &err);
+        buffer_extract(mss->buffer, &request, &err);
         if (err = BUFFER_OK)
         {
           serve_a_request();
