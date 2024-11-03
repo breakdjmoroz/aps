@@ -51,14 +51,20 @@ struct Environment
 enum EVENT_TYPE
 {
   UNDEFINED,
-  GET_EVENT,
+  GET_REQUEST,
   DEVICE_FREE,
   STOP_MODELING,
 };
 
+union EventData
+{
+  struct Request request;
+  struct Device device;
+};
+
 struct Event
 {
-  void* data;
+  union EventData data;
   enum EVENT_TYPE type;
   u32 time_in_sec;
   bool is_active;

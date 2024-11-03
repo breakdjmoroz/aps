@@ -15,7 +15,7 @@ int main()
   struct EventCalendar* calendar = new_calendar(N_EVENTS);
   struct Environment* env = new_env(N_GENERATORS);
 
-  generate_requests();
+  generate_requests(env, calendar);
 
   while(is_modeling)
   {
@@ -24,8 +24,8 @@ int main()
 
     switch(event.type)
     {
-      case GET_EVENT:
-        request = *(struct Request*)event.data;
+      case GET_REQUEST:
+        request = event.data.request;
         generate_request_for(request.gen_number);
         if (have_free_device())
         {

@@ -29,4 +29,6 @@ bool have_free_device();
 
 void serve_a_request();
 
+void insert_event(struct EventCalendar*, struct Event*);
+
 #endif

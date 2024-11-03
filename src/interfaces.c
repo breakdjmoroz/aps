@@ -209,7 +209,6 @@ struct EventCalendar* new_calendar(size_t events_len)
     {
       for(i = 0; i < events_len; ++i)
       {
-        calendar->events[i].data = NULL;
         calendar->events[i].type = UNDEFINED;
         calendar->events[i].time_in_sec = 0;
         calendar->events[i].is_active = false;
@@ -252,6 +251,27 @@ struct Environment* new_env(size_t gen_num)
 
 void generate_requests(const struct Environment* const env, struct EventCalendar* calendar)
 {
+  size_t i = 0;
+
+  struct Request request =
+  {
+    .gen_time = 0, /*TODO: Add a distribution law*/
+    .is_active = true,
+  };
+
+  struct Event event =
+  {
+    .type = GET_REQUEST,
+    .time_in_sec = 0, /*TODO: Add a distribution law*/
+    .is_active = true,
+  };
+
+  for (i = 0; i < env->generators_len; ++i)
+  {
+    request.gen_number = env->generators[i].number;
+    event.data.request = request;
+    insert_event(calendar, &event);
+  }
 }
 
 struct Event get_next_event()
@@ -268,5 +288,9 @@ bool have_free_device()
 }
 
 void serve_a_request()
+{
+}
+
+void insert_event(struct EventCalendar* calendar, struct Event* event)
 {
 }
