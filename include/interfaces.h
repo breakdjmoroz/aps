@@ -22,8 +22,8 @@ struct Environment* new_env(size_t);
 
 void generate_requests(const struct Environment* const, struct EventCalendar*);
 
-struct Event get_next_event();
-void generate_request_for(u32);
+struct Event get_next_event(const struct EventCalendar* const);
+void generate_request_for(u32, struct EventCalendar*);
 
 bool have_free_device();
 

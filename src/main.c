@@ -19,14 +19,14 @@ int main()
 
   while(is_modeling)
   {
-    struct Event event = get_next_event();
+    struct Event event = get_next_event(calendar);
     struct Request request;
 
     switch(event.type)
     {
       case GET_REQUEST:
         request = event.data.request;
-        generate_request_for(request.gen_number);
+        generate_request_for(request.gen_number, calendar);
         if (have_free_device())
         {
           select_device(mss);

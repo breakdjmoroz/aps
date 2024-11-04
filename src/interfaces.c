@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "interfaces.h"
 
 int buffer_insert(struct Buffer* const buffer, const struct Request* const request)
@@ -253,33 +254,53 @@ void generate_requests(const struct Environment* const env, struct EventCalendar
 {
   size_t i = 0;
 
+  for (i = 0; i < env->generators_len; ++i)
+  {
+    generate_request_for(env->generators[i].number, calendar);
+  }
+}
+
+struct Event get_next_event(const struct EventCalendar* const calendar)
+{
+  size_t i = 0;
+  u32 next_time = UINT32_MAX;
+  size_t next_time_index = 0;
+
+  for (i = 0; i < calendar->events_len; ++i)
+  {
+    if(calendar->events[i].is_active)
+    {
+      if (calendar->events[i].time_in_sec < next_time)
+      {
+        next_time = calendar->events[i].time_in_sec;
+        next_time_index = i;
+      }
+    }
+  }
+
+  calendar->events[next_time_index].is_active = false;
+
+  return calendar->events[next_time_index];
+}
+
+void generate_request_for(u32 generator_number, struct EventCalendar* calendar)
+{
   struct Request request =
   {
-    .gen_time = 0, /*TODO: Add a distribution law*/
+    .gen_number = generator_number,
+    .gen_time = 0, /*TODO: insert correct distribution law*/
     .is_active = true,
   };
 
   struct Event event =
   {
+    .data.request = request,
     .type = GET_REQUEST,
-    .time_in_sec = 0, /*TODO: Add a distribution law*/
+    .time_in_sec = 0, /*TODO: insert correct distribution law*/
     .is_active = true,
   };
 
-  for (i = 0; i < env->generators_len; ++i)
-  {
-    request.gen_number = env->generators[i].number;
-    event.data.request = request;
-    insert_event(calendar, &event);
-  }
-}
-
-struct Event get_next_event()
-{
-}
-
-void generate_request_for(u32 generator_number)
-{
+  insert_event(calendar, &event);
 }
 
 /*TODO m.b. you can use 'select_device' for this purpose*/
