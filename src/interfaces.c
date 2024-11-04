@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "interfaces.h"
 
+u32 GLOBAL_TIME = 0;
+
 int buffer_insert(struct Buffer* const buffer, const struct Request* const request)
 {
   int err = 0;
@@ -235,6 +237,7 @@ struct Environment* new_env(size_t gen_num)
 
   if (env != NULL)
   {
+    env->generators_len = gen_num;
     env->generators = (struct Generator*)malloc(gen_num * sizeof(struct Generator));
     if (env->generators != NULL)
     {
@@ -282,6 +285,7 @@ struct Event get_next_event(const struct EventCalendar* const calendar)
   }
 
   calendar->events[next_time_index].is_active = false;
+  GLOBAL_TIME = next_time;
 
   return calendar->events[next_time_index];
 }
@@ -291,7 +295,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar)
   struct Request request =
   {
     .gen_number = generator_number,
-    .gen_time = 0, /*TODO: insert correct distribution law*/
+    .gen_time = GLOBAL_TIME + 2, /*TODO: insert correct distribution law*/
     .is_active = true,
   };
 
@@ -299,7 +303,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar)
   {
     .data.request = request,
     .type = GET_REQUEST,
-    .time_in_sec = 0, /*TODO: insert correct distribution law*/
+    .time_in_sec = request.gen_time, /*TODO: insert correct distribution law*/
     .is_active = true,
   };
 
@@ -325,7 +329,7 @@ void serve_a_request(struct Request* request, struct Device* device, struct Even
 void insert_event(struct EventCalendar* calendar, struct Event* event)
 {
   size_t i = 0;
-  while (calendar->events[i].is_active)
+  while (i < calendar->events_len && calendar->events[i].is_active)
   {
     ++i;
   }

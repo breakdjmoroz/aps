@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "types.h"
@@ -35,12 +36,13 @@ int main()
     switch(event.type)
     {
       case GET_REQUEST:
+        printf(">>>event: GET_REQUEST\n");
         request = event.data.request;
         generate_request_for(request.gen_number, calendar);
         int device_index = select_device(mss);
         if (device_index >= 0)
         {
-            serve_a_request(&request, &env->generators[device_index]);
+            serve_a_request(&request, &env->generators[device_index], calendar);
         }
         else
         {
@@ -48,6 +50,7 @@ int main()
         }
         break;
       case DEVICE_FREE:
+        printf(">>>event: DEVICE_FREE\n");
         int err;
         buffer_extract(mss->buffer, &request, &err);
         if (err = BUFFER_OK)
@@ -55,11 +58,12 @@ int main()
           int device_index = select_device(mss);
           if (device_index >= 0)
           {
-              serve_a_request(&request, &env->generators[device_index]);
+              serve_a_request(&request, &env->generators[device_index], calendar);
           }
         }
         break;
       case STOP_MODELING:
+        printf(">>>event: STOP_MODELING\n");
         is_modeling = false;
         break;
     }
