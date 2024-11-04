@@ -7,13 +7,23 @@
 #define N_EVENTS      (160)
 #define N_GENERATORS  (6)
 #define BUF_SIZE      (8)
+#define STOP_TIME     (200)
 
 int main()
 {
+  const struct Event BREAK_EVENT =
+  {
+    .type = STOP_MODELING,
+    .time_in_sec = STOP_TIME,
+    .is_active = true,
+  }
+
   bool is_modeling = true;
   struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
   struct EventCalendar* calendar = new_calendar(N_EVENTS);
   struct Environment* env = new_env(N_GENERATORS);
+
+  insert_event(calendar, &BREAK_EVENT);
 
   generate_requests(env, calendar);
 
