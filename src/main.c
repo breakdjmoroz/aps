@@ -27,10 +27,10 @@ int main()
       case GET_REQUEST:
         request = event.data.request;
         generate_request_for(request.gen_number, calendar);
-        if (have_free_device())
+        int device_index = select_device(mss);
+        if (device_index >= 0)
         {
-          select_device(mss);
-          serve_a_request();
+            serve_a_request(&request, env->generators[device_index]);
         }
         else
         {
@@ -42,7 +42,11 @@ int main()
         buffer_extract(mss->buffer, &request, &err);
         if (err = BUFFER_OK)
         {
-          serve_a_request();
+          int device_index = select_device(mss);
+          if (device_index >= 0)
+          {
+              serve_a_request(&request, env->generators[device_index]);
+          }
         }
         break;
       case STOP_MODELING:

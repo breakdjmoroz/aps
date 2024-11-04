@@ -14,7 +14,7 @@ void buffer_insert_with_rejected(
 int buffer_insert(struct Buffer* const, const struct Request* const);
 void buffer_extract(struct Buffer* const, struct Request*, int* const);
 
-size_t select_device(const struct MassServiceSystem* const);
+int select_device(const struct MassServiceSystem* const);
 
 struct MassServiceSystem* new_mss(size_t, size_t);
 struct EventCalendar* new_calendar(size_t);
@@ -24,8 +24,6 @@ void generate_requests(const struct Environment* const, struct EventCalendar*);
 
 struct Event get_next_event(const struct EventCalendar* const);
 void generate_request_for(u32, struct EventCalendar*);
-
-bool have_free_device();
 
 void serve_a_request();
 

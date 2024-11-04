@@ -97,18 +97,23 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
   }
 }
 
-size_t select_device(const struct MassServiceSystem* const mss)
+int select_device(const struct MassServiceSystem* const mss)
 {
-  size_t i = 0;
+  int i = 0;
 
   if (mss == NULL)
   {
-    return -1;
+    return -2;
   }
 
   while ((i < mss->devices_len) && !(mss->devices[i].is_free))
   {
     ++i;
+  }
+
+  if (!(i < mss->devices_len))
+  {
+    i = -1;
   }
 
   return i;
@@ -303,12 +308,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar)
   insert_event(calendar, &event);
 }
 
-/*TODO m.b. you can use 'select_device' for this purpose*/
-bool have_free_device()
-{
-}
-
-void serve_a_request()
+void serve_a_request(struct Request* request, )
 {
 }
 
