@@ -215,8 +215,6 @@ struct EventCalendar* new_calendar(size_t events_len)
     {
       for(i = 0; i < events_len; ++i)
       {
-        calendar->events[i].type = UNDEFINED;
-        calendar->events[i].time_in_sec = 0;
         calendar->events[i].is_active = false;
       }
     }
@@ -326,4 +324,10 @@ void serve_a_request(struct Request* request, struct Device* device, struct Even
 
 void insert_event(struct EventCalendar* calendar, struct Event* event)
 {
+  size_t i = 0;
+  while (calendar->events[i].is_active)
+  {
+    ++i;
+  }
+  calendar->events[i] = *event;
 }

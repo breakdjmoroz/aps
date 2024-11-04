@@ -16,7 +16,7 @@ int main()
     .type = STOP_MODELING,
     .time_in_sec = STOP_TIME,
     .is_active = true,
-  }
+  };
 
   bool is_modeling = true;
   struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
