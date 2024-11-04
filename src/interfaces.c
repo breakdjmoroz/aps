@@ -308,8 +308,20 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar)
   insert_event(calendar, &event);
 }
 
-void serve_a_request(struct Request* request, )
+void serve_a_request(struct Request* request, struct Device* device, struct EventCalendar* calendar)
 {
+  request->dev_time = 0; /*TODO: use correct distribution law*/
+  device->is_free = false;
+
+  struct Event event =
+  {
+    .data.device = *device,
+    .type = DEVICE_FREE,
+    .time_in_sec = 0, /*TODO: insert correct distribution law*/
+    .is_active = true,
+  };
+
+  insert_event(calendar, &event);
 }
 
 void insert_event(struct EventCalendar* calendar, struct Event* event)

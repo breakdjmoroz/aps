@@ -4,7 +4,7 @@
 #include "interfaces.h"
 
 #define N_DEVICES     (5)
-#define N_EVENTS      (16)
+#define N_EVENTS      (160)
 #define N_GENERATORS  (6)
 #define BUF_SIZE      (8)
 
@@ -30,7 +30,7 @@ int main()
         int device_index = select_device(mss);
         if (device_index >= 0)
         {
-            serve_a_request(&request, env->generators[device_index]);
+            serve_a_request(&request, &env->generators[device_index]);
         }
         else
         {
@@ -45,7 +45,7 @@ int main()
           int device_index = select_device(mss);
           if (device_index >= 0)
           {
-              serve_a_request(&request, env->generators[device_index]);
+              serve_a_request(&request, &env->generators[device_index]);
           }
         }
         break;
