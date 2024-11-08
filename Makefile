@@ -6,11 +6,13 @@ INCLUDE=./include
 SOURCE=./src
 BINARY=./bin
 
+LIB=-lc -lm
+
 all:
-	gcc $(wildcard $(SOURCE)/*.c) -iquote $(INCLUDE) -o $(BINARY)/$(NAME)
+	gcc $(wildcard $(SOURCE)/*.c) -iquote $(INCLUDE) -o $(BINARY)/$(NAME) -L $(LIB)
 
 debug:
-	gcc -g $(wildcard $(SOURCE)/*.c) -iquote $(INCLUDE) -o $(BINARY)/$(DBG_NAME)
+	gcc -g $(wildcard $(SOURCE)/*.c) -iquote $(INCLUDE) -o $(BINARY)/$(DBG_NAME) -L $(LIB)
 
 clean:
 	rm $(BINARY)/*

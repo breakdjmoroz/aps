@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "types.h"
 #include "interfaces.h"
@@ -9,40 +10,51 @@
 #define N_EVENTS      (160)
 #define N_GENERATORS  (6)
 #define BUF_SIZE      (8)
-#define STOP_TIME     (200)
+#define STOP_TIME     (2.0)
+
+const struct Event BREAK_EVENT =
+{
+  .type = STOP_MODELING,
+  .time_in_sec = STOP_TIME,
+  .is_active = true,
+};
+
+clock_t global_start_time;
+clock_t global_current_time;
+clock_t global_end_time;
 
 int main()
 {
-  const struct Event BREAK_EVENT =
-  {
-    .type = STOP_MODELING,
-    .time_in_sec = STOP_TIME,
-    .is_active = true,
-  };
-
+  size_t i;
   bool is_modeling = true;
   struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
   struct EventCalendar* calendar = new_calendar(N_EVENTS);
   struct Environment* env = new_env(N_GENERATORS);
 
   struct StatisticTable* stat = new_stat(N_EVENTS, N_GENERATORS, N_DEVICES);
-  start_statistic(stat);
+  start_statistic();
 
   insert_event(calendar, &BREAK_EVENT);
 
-  generate_requests(env, calendar);
+  for (i = 0; i < env->generators_len; ++i)
+  {
+    struct Request tmp_request;
+    generate_request_for(env->generators[i].number, calendar, &tmp_request);
+    collect_statistic(stat, &tmp_request, GENERATED_REQUEST);
+  }
 
   while(is_modeling)
   {
     struct Event event = get_next_event(calendar);
     struct Request request;
 
+    printf("<<< time (sec): %lf\n", event.time_in_sec);
     switch(event.type)
     {
       case GET_REQUEST:
         printf(">>> event: GET_REQUEST\n");
         request = event.data.request;
-        generate_request_for(request.gen_number, calendar);
+        generate_request_for(request.gen_number, calendar, NULL);
         int device_index = select_device(mss);
         if (device_index >= 0)
         {

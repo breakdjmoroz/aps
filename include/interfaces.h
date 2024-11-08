@@ -1,8 +1,13 @@
 #ifndef INTERFACE
 #define INTERFACE
 
+#include <time.h>
 #include <stdbool.h>
 #include "types.h"
+
+extern clock_t global_start_time;
+extern clock_t global_current_time;
+extern clock_t global_end_time;
 
 void buffer_insert_with_rejected(
     struct Buffer* const,const struct Request* const,
@@ -17,10 +22,8 @@ struct MassServiceSystem* new_mss(size_t, size_t);
 struct EventCalendar* new_calendar(size_t);
 struct Environment* new_env(size_t);
 
-void generate_requests(const struct Environment* const, struct EventCalendar*);
-
 struct Event get_next_event(const struct EventCalendar* const);
-void generate_request_for(u32, struct EventCalendar*);
+void generate_request_for(u32, struct EventCalendar*, struct Request*);
 
 void serve_a_request();
 

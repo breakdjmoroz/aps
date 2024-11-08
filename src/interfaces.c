@@ -3,6 +3,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <float.h>
+#include <time.h>
+
+/* Move this to distributions.* files */
+#include <math.h>
+
+#define RAND_EXP_LAMBDA (0.05)
+
+double rand_exp(double lambda)
+{
+  double u = rand() / (RAND_MAX + 1.0);
+  return -log(1.0 - u) / lambda;
+}
+/* End of block */
 
 #include "interfaces.h"
 
@@ -268,16 +281,6 @@ struct Environment* new_env(size_t gen_num)
   return env;
 }
 
-void generate_requests(const struct Environment* const env, struct EventCalendar* calendar)
-{
-  size_t i = 0;
-
-  for (i = 0; i < env->generators_len; ++i)
-  {
-    generate_request_for(env->generators[i].number, calendar);
-  }
-}
-
 struct Event get_next_event(const struct EventCalendar* const calendar)
 {
   size_t i = 0;
@@ -301,12 +304,11 @@ struct Event get_next_event(const struct EventCalendar* const calendar)
   return calendar->events[next_time_index];
 }
 
-void generate_request_for(u32 generator_number, struct EventCalendar* calendar)
+void generate_request_for(u32 generator_number, struct EventCalendar* calendar, struct Request* generated_request)
 {
   struct Request request =
   {
     .gen_number = generator_number,
-    .gen_time = 2, /*TODO: insert correct distribution law*/
     .is_active = true,
   };
 
@@ -314,23 +316,31 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar)
   {
     .data.request = request,
     .type = GET_REQUEST,
-    .time_in_sec = request.gen_time, /*TODO: insert correct distribution law*/
     .is_active = true,
   };
 
+  global_current_time = clock();
+
+  event.time_in_sec = (double)(global_current_time - global_start_time) / CLOCKS_PER_SEC + rand() % 5;
+
   insert_event(calendar, &event);
+
+  if (generated_request)
+  {
+    *generated_request = request;
+  }
 }
 
 void serve_a_request(struct Request* request, struct Device* device, struct EventCalendar* calendar)
 {
-  request->dev_time = 0; /*TODO: use correct distribution law*/
+  request->dev_time = (double)global_current_time / CLOCKS_PER_SEC + (int)rand_exp(RAND_EXP_LAMBDA) % 5;
   device->is_free = false;
 
   struct Event event =
   {
     .data.device = *device,
     .type = DEVICE_FREE,
-    .time_in_sec = 0, /*TODO: insert correct distribution law*/
+    .time_in_sec = request->dev_time,
     .is_active = true,
   };
 
