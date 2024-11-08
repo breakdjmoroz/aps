@@ -28,6 +28,13 @@ bool is_equal_requests(struct Request right, struct Request left)
       right.is_active == left.is_active);
 }
 
+bool is_equal_events(struct Event right, struct Event left)
+{
+  return (right.type == left.type &&
+      right.time_in_sec == left.time_in_sec);
+}
+
+
 int buffer_insert(struct Buffer* const buffer, const struct Request* const request)
 {
   int err = 0;
@@ -245,6 +252,7 @@ struct EventCalendar* new_calendar(size_t events_len)
 
   if (calendar != NULL)
   {
+    calendar->current_index = 0;
     calendar->events_len=events_len;
     calendar->events = (struct Event*)malloc(sizeof(struct Event) * events_len);
     if (calendar->events != NULL)
@@ -330,7 +338,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar, 
 
   global_current_time = clock();
 
-  event.time_in_sec = (double)(global_current_time - global_start_time) / CLOCKS_PER_SEC + rand() % 1;
+  event.time_in_sec = (double)(global_current_time - global_start_time) / CLOCKS_PER_SEC + rand() % 3;
 
   insert_event(calendar, &event);
 
@@ -342,7 +350,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar, 
 
 void serve_a_request(struct Request* request, struct Device* device, struct EventCalendar* calendar)
 {
-  request->dev_time = (double)global_current_time / CLOCKS_PER_SEC + (int)rand_exp(RAND_EXP_LAMBDA) % 2;
+  request->dev_time = (double)global_current_time / CLOCKS_PER_SEC + rand_exp(RAND_EXP_LAMBDA) * 0.00001;
   device->is_free = false;
 
   struct Event event =
@@ -358,10 +366,7 @@ void serve_a_request(struct Request* request, struct Device* device, struct Even
 
 void insert_event(struct EventCalendar* calendar, struct Event* event)
 {
-  size_t i = 0;
-  while (i < calendar->events_len && calendar->events[i].is_active)
-  {
-    ++i;
-  }
+  size_t i = calendar->current_index;
   calendar->events[i] = *event;
+  ++calendar->current_index;
 }

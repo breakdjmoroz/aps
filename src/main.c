@@ -7,10 +7,10 @@
 #include "statistic.h"
 
 #define N_DEVICES     (5)
-#define N_EVENTS      (160)
+#define N_EVENTS      (1600)
 #define N_GENERATORS  (6)
 #define BUF_SIZE      (8)
-#define STOP_TIME     (0.001)
+#define STOP_TIME     (2.000)
 
 const struct Event BREAK_EVENT =
 {
@@ -57,6 +57,11 @@ int main()
   {
     struct Event event = get_next_event(calendar);
     struct Request request;
+
+    if (!is_generating_request && is_equal_events(event, BREAK_EVENT))
+    {
+      is_modeling = false;
+    }
 
     printf("<<< time (sec): %lf\n", event.time_in_sec);
     switch(event.type)
@@ -108,6 +113,7 @@ int main()
         }
         else if (!is_generating_request)
         {
+          printf(">>>>>>>>> buffer: all requests served\n");
           is_modeling = false;
         }
         else
