@@ -57,6 +57,7 @@ int main()
   {
     struct Event event = get_next_event(calendar);
     struct Request request;
+    int device_index;
 
     if (!is_generating_request && is_equal_events(event, BREAK_EVENT))
     {
@@ -73,7 +74,7 @@ int main()
         {
           generate_request_for(request.gen_number, calendar, NULL);
         }
-        int device_index = select_device(mss);
+        device_index = select_device(mss);
         if (device_index >= 0)
         {
           printf(">>>>>>>>> device: serve requset immideatly\n");
@@ -100,14 +101,15 @@ int main()
       case DEVICE_FREE:
         printf(">>> event: DEVICE_FREE\n");
         int err;
+        mss->devices[event.data.device.number].is_free = true;
         buffer_extract(mss->buffer, &request, &err);
         if (err > 0)
         {
           printf(">>>>>>>>> buffer: extract a request from buffer\n");
-          int device_index = select_device(mss);
+          device_index = select_device(mss);
           if (device_index >= 0)
           {
-              serve_a_request(&request, &env->generators[device_index], calendar);
+              serve_a_request(&request, &(mss->devices[device_index]), calendar);
               collect_statistic(stat, &request, SERVED_REQUEST);
           }
         }
