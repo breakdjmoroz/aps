@@ -6,11 +6,11 @@
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (5)
+#define N_DEVICES     (1)
 #define N_EVENTS      (1600)
 #define N_GENERATORS  (6)
-#define BUF_SIZE      (8)
-#define STOP_TIME     (2.000)
+#define BUF_SIZE      (3)
+#define STOP_TIME     (3.000)
 
 const struct Event BREAK_EVENT =
 {
@@ -103,7 +103,7 @@ int main()
         int err;
         mss->devices[event.data.device.number].is_free = true;
         buffer_extract(mss->buffer, &request, &err);
-        if (err > 0)
+        if (err == 0)
         {
           printf(">>>>>>>>> buffer: extract a request from buffer\n");
           device_index = select_device(mss);
@@ -120,7 +120,7 @@ int main()
         }
         else
         {
-          printf(">>>>>>>>> buffer: is empty!\n");
+          printf(">>>>>>>>> device: halt\n");
         }
         break;
       case STOP_MODELING:

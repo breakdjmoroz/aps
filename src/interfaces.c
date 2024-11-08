@@ -110,17 +110,19 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
       current_priority =
         buffer->requests[current_index].gen_number;
 
-      if (current_priority > max_priority)
+      if (current_priority >= max_priority)
       {
         max_priority = current_priority;
         request_index = current_index;
       }
+#if 0
       else if ((current_priority == max_priority) &&
           (buffer->requests[current_index].buf_time <
            buffer->requests[request_index].buf_time))
       {
         request_index = current_index;
       }
+#endif
     }
   }
 
