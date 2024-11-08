@@ -64,7 +64,7 @@ int main()
         printf(">>> event: DEVICE_FREE\n");
         int err;
         buffer_extract(mss->buffer, &request, &err);
-        if (err = BUFFER_OK)
+        if (err > 0)
         {
           int device_index = select_device(mss);
           if (device_index >= 0)

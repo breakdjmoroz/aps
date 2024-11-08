@@ -4,9 +4,6 @@
 #include <stdbool.h>
 #include "types.h"
 
-//TODO: change this value if need
-#define BUFFER_OK     (0)
-
 void buffer_insert_with_rejected(
     struct Buffer* const,const struct Request* const,
     struct Request*, int* const

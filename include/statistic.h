@@ -1,22 +1,25 @@
 #ifndef STATISTIC
 #define STATISTIC
 
+#include <time.h>
 #include "types.h"
 
 #define REJECTED_REQUEST  (0)
 #define SERVED_REQUEST    (1)
 
+extern time_t global_time;
+
 struct StatisticTable
 {
   struct Request* statistics;
   size_t statistics_len;
-  u32* average_waiting_time;
-  u32* average_serving_time;
-  u32* average_total_time;
+  double* average_waiting_time;
+  double* average_serving_time;
+  double* average_total_time;
   size_t generators_num;
-  u32* average_total_time_device;
+  double* average_total_time_device;
   size_t devices_num;
-  u32 total_realization_time;
+  double total_realization_time;
 };
 
 struct StatisticTable* new_stat(size_t, size_t, size_t);

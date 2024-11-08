@@ -18,9 +18,9 @@ struct Buffer
 struct Request
 {
   u32 gen_number;
-  u32 gen_time;
-  u32 buf_time;
-  u32 dev_time;
+  double gen_time;
+  double buf_time;
+  double dev_time;
   bool is_active;
 };
 
@@ -66,8 +66,8 @@ struct Event
 {
   union EventData data;
   enum EVENT_TYPE type;
-  u32 time_in_sec;
   bool is_active;
+  double time_in_sec;
 };
 
 struct EventCalendar

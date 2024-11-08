@@ -2,9 +2,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "interfaces.h"
+#include <float.h>
 
-u32 GLOBAL_TIME = 0;
+#include "interfaces.h"
 
 int buffer_insert(struct Buffer* const buffer, const struct Request* const request)
 {
@@ -64,6 +64,7 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
   size_t current_index = 0;
   size_t request_index = 0;
   int err = 0;
+  bool is_buffer_full = false;
   size_t i;
 
   if (buffer == NULL || request == NULL)
@@ -74,24 +75,35 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
   for (i = 0; i < buffer->size; ++i)
   {
     current_index = (buffer->current_index + i) % buffer->size;
-    current_priority =
-      buffer->requests[current_index].gen_number;
+    if (buffer->requests[current_index].is_active)
+    {
+      is_buffer_full = true;
+      current_priority =
+        buffer->requests[current_index].gen_number;
 
-    if (current_priority > max_priority)
-    {
-      max_priority = current_priority;
-      request_index = current_index;
-    }
-    else if ((current_priority == max_priority) &&
-        (buffer->requests[current_index].buf_time <
-         buffer->requests[request_index].buf_time))
-    {
-      request_index = current_index;
+      if (current_priority > max_priority)
+      {
+        max_priority = current_priority;
+        request_index = current_index;
+      }
+      else if ((current_priority == max_priority) &&
+          (buffer->requests[current_index].buf_time <
+           buffer->requests[request_index].buf_time))
+      {
+        request_index = current_index;
+      }
     }
   }
 
-  *request = buffer->requests[request_index];
-  buffer->requests[request_index].is_active = false;
+  if (is_buffer_full)
+  {
+    *request = buffer->requests[request_index];
+    buffer->requests[request_index].is_active = false;
+  }
+  else
+  {
+    err = -2;
+  }
 
   if (err_num != NULL)
   {
@@ -269,7 +281,7 @@ void generate_requests(const struct Environment* const env, struct EventCalendar
 struct Event get_next_event(const struct EventCalendar* const calendar)
 {
   size_t i = 0;
-  u32 next_time = UINT32_MAX;
+  double next_time = DBL_MAX;
   size_t next_time_index = 0;
 
   for (i = 0; i < calendar->events_len; ++i)
@@ -285,7 +297,6 @@ struct Event get_next_event(const struct EventCalendar* const calendar)
   }
 
   calendar->events[next_time_index].is_active = false;
-  GLOBAL_TIME = next_time;
 
   return calendar->events[next_time_index];
 }
@@ -295,7 +306,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar)
   struct Request request =
   {
     .gen_number = generator_number,
-    .gen_time = GLOBAL_TIME + 2, /*TODO: insert correct distribution law*/
+    .gen_time = 2, /*TODO: insert correct distribution law*/
     .is_active = true,
   };
 
