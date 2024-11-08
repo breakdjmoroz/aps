@@ -19,6 +19,15 @@ double rand_exp(double lambda)
 
 #include "interfaces.h"
 
+bool is_equal_requests(struct Request right, struct Request left)
+{
+  return (right.gen_number == left.gen_number &&
+      right.gen_time == left.gen_time &&
+      right.buf_time == left.buf_time &&
+      right.dev_time == left.dev_time &&
+      right.is_active == left.is_active);
+}
+
 int buffer_insert(struct Buffer* const buffer, const struct Request* const request)
 {
   int err = 0;
@@ -39,7 +48,6 @@ void buffer_insert_with_rejected(
 {
   int err = 0;
   size_t current_index = buffer->current_index;
-  rejected_request = NULL;
 
   if (buffer == NULL || in_request == NULL || rejected_request == NULL)
   {
@@ -47,6 +55,7 @@ void buffer_insert_with_rejected(
   }
   else
   {
+    *rejected_request = EMPTY_REQUEST;
     //Cycle insert rule
     while (buffer->requests[current_index].is_active)
     {
@@ -56,10 +65,10 @@ void buffer_insert_with_rejected(
       {
         *rejected_request = buffer->requests[current_index];
         rejected_request->is_active = false;
+        break;
       }
     }
 
-    //TODO: Fill in_request->buf_time
     buffer->requests[current_index] = *in_request;
 
     current_index = (current_index + 1) % buffer->size;

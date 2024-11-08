@@ -17,7 +17,7 @@ struct Buffer
 
 struct Request
 {
-  u32 gen_number;
+  int gen_number;
   double gen_time;
   double buf_time;
   double dev_time;

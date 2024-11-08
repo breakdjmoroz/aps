@@ -19,6 +19,15 @@ const struct Event BREAK_EVENT =
   .is_active = true,
 };
 
+const struct Request EMPTY_REQUEST =
+{
+  .gen_number = -1,
+  .gen_time = -1.0,
+  .buf_time = -1.0,
+  .dev_time = -1.0,
+  .is_active = false,
+};
+
 clock_t global_start_time;
 clock_t global_current_time;
 clock_t global_end_time;
@@ -62,24 +71,24 @@ int main()
         int device_index = select_device(mss);
         if (device_index >= 0)
         {
-          printf(">>>>>> device: serve requset immideatly\n");
+          printf(">>>>>>>>> device: serve requset immideatly\n");
           serve_a_request(&request, &(mss->devices[device_index]), calendar);
           collect_statistic(stat, &request, SERVED_REQUEST);
         }
         else
         {
-          printf(">>>>>> device: send request to buffer\n");
+          printf(">>>>>>>>> device: send request to buffer\n");
           int err;
-          struct Request* rejected_request;
-          buffer_insert_with_rejected(mss->buffer, &request, rejected_request, &err);
-          if (rejected_request != NULL)
+          struct Request rejected_request;
+          buffer_insert_with_rejected(mss->buffer, &request, &rejected_request, &err);
+          if (!is_equal_requests(rejected_request, EMPTY_REQUEST))
           {
-            printf(">>>>>> buffer: reject request under pointer\n");
-            collect_statistic(stat, rejected_request, REJECTED_REQUEST);
+            printf(">>>>>>>>> buffer: reject request under pointer\n");
+            collect_statistic(stat, &rejected_request, REJECTED_REQUEST);
           }
           else
           {
-            printf(">>>>>> buffer: insert a request\n");
+            printf(">>>>>>>>> buffer: insert a request\n");
           }
         }
         break;
@@ -89,7 +98,7 @@ int main()
         buffer_extract(mss->buffer, &request, &err);
         if (err > 0)
         {
-          printf(">>>>>> buffer: extract a request from buffer\n");
+          printf(">>>>>>>>> buffer: extract a request from buffer\n");
           int device_index = select_device(mss);
           if (device_index >= 0)
           {
@@ -103,7 +112,7 @@ int main()
         }
         else
         {
-          printf(">>>>>> buffer: is empty!\n");
+          printf(">>>>>>>>> buffer: is empty!\n");
         }
         break;
       case STOP_MODELING:

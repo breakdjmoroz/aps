@@ -5,9 +5,13 @@
 #include <stdbool.h>
 #include "types.h"
 
+extern const struct Request EMPTY_REQUEST;
+
 extern clock_t global_start_time;
 extern clock_t global_current_time;
 extern clock_t global_end_time;
+
+bool is_equal_requests(struct Request, struct Request);
 
 void buffer_insert_with_rejected(
     struct Buffer* const,const struct Request* const,
