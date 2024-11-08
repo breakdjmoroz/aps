@@ -25,7 +25,7 @@ int main()
   struct EventCalendar* calendar = new_calendar(N_EVENTS);
   struct Environment* env = new_env(N_GENERATORS);
 
-  struct StatisticTable* stat = new_stat();
+  struct StatisticTable* stat = new_stat(N_EVENTS, N_GENERATORS, N_DEVICES);
   start_statistic(stat);
 
   insert_event(calendar, &BREAK_EVENT);

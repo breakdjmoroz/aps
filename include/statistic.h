@@ -19,7 +19,7 @@ struct StatisticTable
   u32 total_realization_time;
 };
 
-struct StatisticTable* new_stat();
+struct StatisticTable* new_stat(size_t, size_t, size_t);
 
 void start_statistic(struct StatisticTable*);
 void collect_statistic(struct StatisticTable*, struct Request*, int);
