@@ -8,6 +8,15 @@
 
 struct StatisticTable
 {
+  struct Request* statistics;
+  size_t statistics_len;
+  u32* average_waiting_time;
+  u32* average_serving_time;
+  u32* average_total_time;
+  size_t generators_num;
+  u32* average_total_time_device;
+  size_t devices_num;
+  u32 total_realization_time;
 };
 
 struct StatisticTable* new_stat();

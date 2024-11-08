@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "interfaces.h"
+#include "statistic.h"
 
 #define N_DEVICES     (5)
 #define N_EVENTS      (160)
@@ -24,8 +25,8 @@ int main()
   struct EventCalendar* calendar = new_calendar(N_EVENTS);
   struct Environment* env = new_env(N_GENERATORS);
 
-  struct StatisticTable stat = new_stat();
-  start_statistic(&stat);
+  struct StatisticTable* stat = new_stat();
+  start_statistic(stat);
 
   insert_event(calendar, &BREAK_EVENT);
 
@@ -46,16 +47,16 @@ int main()
         if (device_index >= 0)
         {
           serve_a_request(&request, &env->generators[device_index], calendar);
-          collect_statistic(&stat, &request, SERVED_REQUEST);
+          collect_statistic(stat, &request, SERVED_REQUEST);
         }
         else
         {
           int err;
-          struct Request rejected_request;
-          buffer_insert_with_rejected(mss->buffer, &request, &rejected_request, &err);
+          struct Request* rejected_request;
+          buffer_insert_with_rejected(mss->buffer, &request, rejected_request, &err);
           if (rejected_request != NULL)
           {
-            collect_statistic(&stat, &rejected_request, REJECTED_REQUEST);
+            collect_statistic(stat, rejected_request, REJECTED_REQUEST);
           }
         }
         break;
@@ -69,19 +70,19 @@ int main()
           if (device_index >= 0)
           {
               serve_a_request(&request, &env->generators[device_index], calendar);
-              collect_statistic(&stat, &request, SERVED_REQUEST);
+              collect_statistic(stat, &request, SERVED_REQUEST);
           }
         }
         break;
       case STOP_MODELING:
         printf(">>> event: STOP_MODELING\n");
         is_modeling = false;
-        stop_statistic(&stat);
+        stop_statistic(stat);
         break;
     }
   }
 
-  print_statistic(&stat);
+  print_statistic(stat);
 
   return 0;
 }
