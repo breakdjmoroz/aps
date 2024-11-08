@@ -76,11 +76,4 @@ struct EventCalendar
   size_t events_len;
 };
 
-struct Model
-{
-  struct MassServiceSystem mss;
-  struct Environment env;
-  struct EventCalendar calendar;
-};
-
 #endif
