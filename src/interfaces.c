@@ -126,24 +126,24 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
 
 int select_device(const struct MassServiceSystem* const mss)
 {
-  int i = 0;
+  size_t i = 0;
+  int device_index = -1;
 
   if (mss == NULL)
   {
     return -2;
   }
 
-  while ((i < mss->devices_len) && !(mss->devices[i].is_free))
+  for (i = 0; i < (mss->devices_len); ++i)
   {
-    ++i;
+    if (mss->devices[i].is_free)
+    {
+      device_index = (int)i;
+      break;
+    }
   }
 
-  if (!(i < mss->devices_len))
-  {
-    i = -1;
-  }
-
-  return i;
+  return device_index;
 }
 
 void  allocate_devices(struct Device* devices, size_t devices_len)
@@ -321,7 +321,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar, 
 
   global_current_time = clock();
 
-  event.time_in_sec = (double)(global_current_time - global_start_time) / CLOCKS_PER_SEC + rand() % 5;
+  event.time_in_sec = (double)(global_current_time - global_start_time) / CLOCKS_PER_SEC + rand() % 1;
 
   insert_event(calendar, &event);
 
@@ -333,7 +333,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar, 
 
 void serve_a_request(struct Request* request, struct Device* device, struct EventCalendar* calendar)
 {
-  request->dev_time = (double)global_current_time / CLOCKS_PER_SEC + (int)rand_exp(RAND_EXP_LAMBDA) % 5;
+  request->dev_time = (double)global_current_time / CLOCKS_PER_SEC + (int)rand_exp(RAND_EXP_LAMBDA) % 2;
   device->is_free = false;
 
   struct Event event =

@@ -10,7 +10,7 @@
 #define N_EVENTS      (160)
 #define N_GENERATORS  (6)
 #define BUF_SIZE      (8)
-#define STOP_TIME     (2.0)
+#define STOP_TIME     (0.001)
 
 const struct Event BREAK_EVENT =
 {
@@ -27,6 +27,7 @@ int main()
 {
   size_t i;
   bool is_modeling = true;
+  bool is_generating_request = true;
   struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
   struct EventCalendar* calendar = new_calendar(N_EVENTS);
   struct Environment* env = new_env(N_GENERATORS);
@@ -54,21 +55,31 @@ int main()
       case GET_REQUEST:
         printf(">>> event: GET_REQUEST\n");
         request = event.data.request;
-        generate_request_for(request.gen_number, calendar, NULL);
+        if(is_generating_request)
+        {
+          generate_request_for(request.gen_number, calendar, NULL);
+        }
         int device_index = select_device(mss);
         if (device_index >= 0)
         {
-          serve_a_request(&request, &env->generators[device_index], calendar);
+          printf(">>>>>> device: serve requset immideatly\n");
+          serve_a_request(&request, &(mss->devices[device_index]), calendar);
           collect_statistic(stat, &request, SERVED_REQUEST);
         }
         else
         {
+          printf(">>>>>> device: send request to buffer\n");
           int err;
           struct Request* rejected_request;
           buffer_insert_with_rejected(mss->buffer, &request, rejected_request, &err);
           if (rejected_request != NULL)
           {
+            printf(">>>>>> buffer: reject request under pointer\n");
             collect_statistic(stat, rejected_request, REJECTED_REQUEST);
+          }
+          else
+          {
+            printf(">>>>>> buffer: insert a request\n");
           }
         }
         break;
@@ -78,6 +89,7 @@ int main()
         buffer_extract(mss->buffer, &request, &err);
         if (err > 0)
         {
+          printf(">>>>>> buffer: extract a request from buffer\n");
           int device_index = select_device(mss);
           if (device_index >= 0)
           {
@@ -85,14 +97,25 @@ int main()
               collect_statistic(stat, &request, SERVED_REQUEST);
           }
         }
+        else if (!is_generating_request)
+        {
+          is_modeling = false;
+        }
+        else
+        {
+          printf(">>>>>> buffer: is empty!\n");
+        }
         break;
       case STOP_MODELING:
         printf(">>> event: STOP_MODELING\n");
-        is_modeling = false;
-        stop_statistic(stat);
+        is_generating_request = false;
         break;
     }
   }
+
+  printf(">>> event: END_MODELING\n");
+
+  stop_statistic(stat);
 
   print_statistic(stat);
 
