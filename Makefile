@@ -9,10 +9,10 @@ BINARY=./bin
 LIB=-lc -lm
 
 all:
-	gcc $(wildcard $(SOURCE)/*.c) -iquote $(INCLUDE) -o $(BINARY)/$(NAME) -L $(LIB)
+	$(CC) $(wildcard $(SOURCE)/*.c) -iquote $(INCLUDE) -o $(BINARY)/$(NAME) -L $(LIB)
 
 debug:
-	gcc -g $(wildcard $(SOURCE)/*.c) -iquote $(INCLUDE) -o $(BINARY)/$(DBG_NAME) -L $(LIB)
+	$(CC) -g $(wildcard $(SOURCE)/*.c) -iquote $(INCLUDE) -o $(BINARY)/$(DBG_NAME) -L $(LIB)
 
 clean:
 	rm $(BINARY)/*
