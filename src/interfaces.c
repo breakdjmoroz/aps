@@ -340,11 +340,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar, 
     .is_active = true,
   };
 
-  global_current_time = clock();
-
-  event.time_in_sec =
-    (double)(global_current_time - global_start_time)
-    / CLOCKS_PER_SEC + rand() % 2;
+  event.time_in_sec = global_current_time + (double)((rand() % 998) + 1) * 0.001;
 
   insert_event(calendar, &event);
 
@@ -356,9 +352,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar, 
 
 void serve_a_request(struct Request* request, struct Device* device, struct EventCalendar* calendar)
 {
-  request->dev_time =
-    (double)global_current_time / CLOCKS_PER_SEC
-    + rand_exp(RAND_EXP_LAMBDA) * 0.0001;
+  request->dev_time = global_current_time + rand_exp(RAND_EXP_LAMBDA) * 0.01;
 
   device->is_free = false;
 

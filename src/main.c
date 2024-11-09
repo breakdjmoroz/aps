@@ -6,7 +6,7 @@
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (1)
+#define N_DEVICES     (3)
 #define N_EVENTS      (3200000)
 #define N_GENERATORS  (10)
 #define BUF_SIZE      (4)
@@ -29,7 +29,7 @@ const struct Request EMPTY_REQUEST =
 };
 
 clock_t global_start_time;
-clock_t global_current_time;
+double global_current_time;
 clock_t global_end_time;
 
 int main()
@@ -59,6 +59,8 @@ int main()
     struct Request request;
     int device_index;
 
+    global_current_time = event.time_in_sec;
+
     if (!is_generating_request && is_equal_events(event, BREAK_EVENT))
     {
       is_modeling = false;
@@ -69,7 +71,7 @@ int main()
       case GET_REQUEST:
         printf("==========================\n");
         printf(">>> event: GET_REQUEST\n");
-        printf("time (sec): %lf\n", event.time_in_sec);
+        printf("time (sec): %lf\n", global_current_time);
         request = event.data.request;
         printf(">>>>>>>>> request: generator's num is %d\n", request.gen_number);
         if(is_generating_request)
@@ -91,26 +93,26 @@ int main()
           buffer_insert_with_rejected(mss->buffer, &request, &rejected_request, &err);
           if (!is_equal_requests(rejected_request, EMPTY_REQUEST))
           {
-            printf(">>>>>>>>> buffer: reject request under pointer [%d]\n", mss->buffer->current_index);
+            printf(">>>>>>>>> buffer: reject request under pointer [%d]\n", (mss->buffer->current_index - 1) % mss->buffer->size);
             collect_statistic(stat, &rejected_request, REJECTED_REQUEST);
           }
           else
           {
-            printf(">>>>>>>>> buffer [%d]: insert a request\n", mss->buffer->current_index);
+            printf(">>>>>>>>> buffer [%d]: insert a request\n", (mss->buffer->current_index - 1) % mss->buffer->size);
           }
         }
         break;
       case DEVICE_FREE:
         printf("==========================\n");
         printf(">>> event: DEVICE_FREE\n");
-        printf("time (sec): %lf\n", event.time_in_sec);
+        printf("time (sec): %lf\n", global_current_time);
         int err;
         mss->devices[event.data.device.number].is_free = true;
         printf(">>>>>>>>> device [%d]: service finished\n", event.data.device.number);
         buffer_extract(mss->buffer, &request, &err);
         if (err == 0)
         {
-          printf(">>>>>>>>> buffer [%d]: extract a request\n", mss->buffer->current_index);
+          printf(">>>>>>>>> buffer [%d]: extract a request\n", (mss->buffer->current_index - 1) % mss->buffer->size);
           device_index = select_device(mss);
           if (device_index >= 0)
           {
@@ -130,8 +132,9 @@ int main()
         break;
       case STOP_MODELING:
         printf("==========================\n");
-        printf(">>> event: STOP_MODELING\n");
-        printf("time (sec): %lf\n", event.time_in_sec);
+        printf("||     STOP_MODELING    ||\n");
+        printf("==========================\n");
+        printf("time (sec): %lf\n", global_current_time);
         is_generating_request = false;
         break;
     }

@@ -3,9 +3,9 @@
 
 #include "statistic.h"
 
-extern time_t global_start_time;
-extern time_t global_current_time;
-extern time_t global_end_time;
+extern clock_t global_start_time;
+extern double global_current_time;
+extern clock_t global_end_time;
 
 struct StatisticTable* new_stat(size_t statistics_len, size_t generators_num, size_t devices_num)
 {
@@ -44,6 +44,7 @@ struct StatisticTable* new_stat(size_t statistics_len, size_t generators_num, si
 void start_statistic()
 {
   global_start_time = clock();
+  global_current_time = 0.0;
 }
 
 void collect_statistic(struct StatisticTable*, struct Request*, int)
