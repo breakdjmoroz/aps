@@ -22,8 +22,8 @@ struct StatisticTable* new_stat(size_t generators_num, size_t devices_num)
     {
       stat->generators = generators;
       stat->devices = devices;
-      stat->generators_num = 0;
-      stat->devices_num = 0;
+      stat->generators_num = generators_num;
+      stat->devices_num = devices_num;
       stat->total_realization_time = 0.0;
     }
     else
@@ -94,5 +94,42 @@ void stop_statistic(struct StatisticTable* stat)
 
 void print_statistic(struct StatisticTable* stat)
 {
+  size_t i = 0;
+  double total_amount = 0.0;
+  double waiting_time = 0.0;
+  double serving_time = 0.0;
+  double total_time = 0.0;
+  double reject_probability = 0.0;
 
+  printf("================GENERATORS_STATISTIC================\n");
+  printf("|gen_№|total|p(rej)|avr(wait)|avr(serve)|avr(total)|\n");
+  printf("|-----+-----+------+---------+----------+----------|\n");
+
+  for (i = 0; i < stat->generators_num; ++i)
+  {
+    total_amount = (double)stat->generators[i].total_amount;
+    waiting_time = stat->generators[i].average_waiting_time
+      / total_amount;
+    serving_time = stat->generators[i].average_serving_time
+      / total_amount;
+    total_time = stat->generators[i].average_total_time
+      / total_amount;
+
+    reject_probability = (double)stat->generators[i].rejected_amount
+      / total_amount;
+
+    /*TODO: calculate dispersia of waiting_time and serving_time*/
+
+    printf(
+        "|%5d|%5d|%6lf|%9lf|%10lf|%10lf|\n",
+        i,
+        total_amount,
+        reject_probability,
+        waiting_time,
+        serving_time,
+        total_time
+        );
+  }
+
+  printf("|-----+-----+------+---------+----------+----------|\n");
 }
