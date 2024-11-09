@@ -101,13 +101,13 @@ void print_statistic(struct StatisticTable* stat)
   double total_time = 0.0;
   double reject_probability = 0.0;
 
-  printf("================GENERATORS_STATISTIC================\n");
-  printf("|gen_№|total|p(rej)|avr(wait)|avr(serve)|avr(total)|\n");
-  printf("|-----+-----+------+---------+----------+----------|\n");
+  printf("=================GENERATORS_STATISTIC=================\n");
+  printf("|gen_№|total|p_reject|avr(wait)|avr(serve)|avr(total)|\n");
+  printf("|-----+-----+--------+---------+----------+----------|\n");
 
   for (i = 0; i < stat->generators_num; ++i)
   {
-    total_amount = (double)stat->generators[i].total_amount;
+    total_amount = (double)(stat->generators[i].total_amount);
     waiting_time = stat->generators[i].average_waiting_time
       / total_amount;
     serving_time = stat->generators[i].average_serving_time
@@ -123,7 +123,7 @@ void print_statistic(struct StatisticTable* stat)
     printf(
         "|%5d|%5d|%6lf|%9lf|%10lf|%10lf|\n",
         i,
-        total_amount,
+        (int)total_amount,
         reject_probability,
         waiting_time,
         serving_time,
@@ -131,5 +131,5 @@ void print_statistic(struct StatisticTable* stat)
         );
   }
 
-  printf("|-----+-----+------+---------+----------+----------|\n");
+  printf("|-----+-----+--------+---------+----------+----------|\n");
 }
