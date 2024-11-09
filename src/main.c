@@ -6,10 +6,10 @@
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (10)
+#define N_DEVICES     (11)
 #define N_EVENTS      (32000)
 #define N_GENERATORS  (30)
-#define BUF_SIZE      (40)
+#define BUF_SIZE      (100)
 #define STOP_TIME     (20.000)
 
 #define ONESHOT_MODE  (false)

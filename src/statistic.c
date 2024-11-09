@@ -60,12 +60,24 @@ void collect_statistic(struct StatisticTable* stat, struct Request* request, int
 {
   if (stat != NULL && request != NULL)
   {
+    double waiting_time = 0.0;
+    double serving_time = 0.0;
+    double total_time = 0.0;
     switch (mode)
     {
       case SERVED_REQUEST:
-        double waiting_time = request->buf_time - request->gen_time;
-        double serving_time = request->dev_time - request->buf_time;
-        double total_time = waiting_time + serving_time;
+        if (request->buf_time > 0)
+        {
+          waiting_time = request->buf_time - request->gen_time;
+          serving_time = request->dev_time - request->buf_time;
+        }
+        else
+        {
+          waiting_time = 0.0;
+          serving_time = request->dev_time - request->gen_time;
+        }
+
+        total_time = waiting_time + serving_time;
 
         stat->generators[request->gen_number].total_amount += 1;
         stat->generators[request->gen_number].average_waiting_time
@@ -131,5 +143,5 @@ void print_statistic(struct StatisticTable* stat)
         );
   }
 
-  printf("|-----+-----+--------+---------+----------+----------|\n");
+  printf("======================================================\n");
 }
