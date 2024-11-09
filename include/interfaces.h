@@ -15,10 +15,10 @@ bool is_equal_requests(struct Request, struct Request);
 bool is_equal_events(struct Event, struct Event);
 
 void buffer_insert_with_rejected(
-    struct Buffer* const,const struct Request* const,
+    struct Buffer* const, struct Request*,
     struct Request*, int* const
     );
-int buffer_insert(struct Buffer* const, const struct Request* const);
+int buffer_insert(struct Buffer* const, struct Request*);
 void buffer_extract(struct Buffer* const, struct Request*, int* const);
 
 int select_device(const struct MassServiceSystem* const);

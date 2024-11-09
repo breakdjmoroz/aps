@@ -6,11 +6,11 @@
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (3)
+#define N_DEVICES     (1)
 #define N_EVENTS      (3200000)
-#define N_GENERATORS  (10)
+#define N_GENERATORS  (3)
 #define BUF_SIZE      (4)
-#define STOP_TIME     (3.000)
+#define STOP_TIME     (2.000)
 
 const struct Event BREAK_EVENT =
 {

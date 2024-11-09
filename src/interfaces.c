@@ -35,7 +35,7 @@ bool is_equal_events(struct Event right, struct Event left)
 }
 
 
-int buffer_insert(struct Buffer* const buffer, const struct Request* const request)
+int buffer_insert(struct Buffer* const buffer, struct Request* request)
 {
   int err = 0;
   struct Request rejected_request;
@@ -49,7 +49,7 @@ int buffer_insert(struct Buffer* const buffer, const struct Request* const reque
 
 void buffer_insert_with_rejected(
     struct Buffer* const buffer,
-    const struct Request* const in_request,
+    struct Request* in_request,
     struct Request* rejected_request,
     int* const err_num)
 {
@@ -91,6 +91,8 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
 {
   u32 max_priority = 0;
   u32 current_priority = 0;
+  double min_gen_time = DBL_MAX;
+  double current_gen_time = 0.0;
   size_t current_index = buffer->current_index;
   size_t request_index = buffer->current_index;
   int err = 0;
@@ -110,25 +112,27 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
       is_buffer_full = true;
       current_priority =
         buffer->requests[current_index].gen_number;
+      current_gen_time =
+        buffer->requests[current_index].gen_time;
 
-      if (current_priority >= max_priority)
+      if (current_priority > max_priority)
       {
         max_priority = current_priority;
+        min_gen_time = current_gen_time;
         request_index = current_index;
       }
-#if 0
       else if ((current_priority == max_priority) &&
-          (buffer->requests[current_index].buf_time <
-           buffer->requests[request_index].buf_time))
+              (current_gen_time < min_gen_time))
       {
+        min_gen_time = current_gen_time;
         request_index = current_index;
       }
-#endif
     }
   }
 
   if (is_buffer_full)
   {
+    buffer->requests[request_index].buf_time = global_current_time;
     *request = buffer->requests[request_index];
     buffer->current_index = request_index + 1;
     buffer->requests[request_index].is_active = false;
@@ -330,17 +334,21 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar, 
   struct Request request =
   {
     .gen_number = generator_number,
+    .buf_time = 0.0,
+    .dev_time = 0.0,
     .is_active = true,
   };
 
   struct Event event =
   {
-    .data.request = request,
     .type = GET_REQUEST,
     .is_active = true,
   };
 
-  event.time_in_sec = global_current_time + (double)((rand() % 998) + 1) * 0.001;
+  request.gen_time = global_current_time + (double)((rand() % 998) + 1) * 0.001;
+
+  event.time_in_sec = request.gen_time;
+  event.data.request = request,
 
   insert_event(calendar, &event);
 
