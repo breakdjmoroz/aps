@@ -5,7 +5,7 @@
 
 #define REJECTED_REQUEST  (0)
 #define SERVED_REQUEST    (1)
-#define GENERATED_REQUEST (2)
+#define HALTED_DEVICE     (2)
 
 struct GeneratorStatistic
 {

@@ -1,5 +1,6 @@
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "statistic.h"
 
@@ -57,7 +58,32 @@ void start_statistic(struct StatisticTable* stat)
 
 void collect_statistic(struct StatisticTable* stat, struct Request* request, int mode)
 {
+  if (stat != NULL && request != NULL)
+  {
+    switch (mode)
+    {
+      case SERVED_REQUEST:
+        double waiting_time = request->buf_time - request->gen_time;
+        double serving_time = request->dev_time - request->buf_time;
+        double total_time = waiting_time + serving_time;
 
+        stat->generators[request->gen_number].total_amount += 1;
+        stat->generators[request->gen_number].average_waiting_time
+          += waiting_time;
+        stat->generators[request->gen_number].average_serving_time
+          += serving_time;
+        stat->generators[request->gen_number].average_total_time
+          += total_time;
+        break;
+      case REJECTED_REQUEST:
+        stat->generators[request->gen_number].total_amount += 1;
+        stat->generators[request->gen_number].rejected_amount += 1;
+        break;
+      case HALTED_DEVICE:
+        /*TODO: insert definition */
+        break;
+    }
+  }
 }
 
 void stop_statistic(struct StatisticTable* stat)
@@ -66,6 +92,7 @@ void stop_statistic(struct StatisticTable* stat)
   stat->total_realization_time = (double)(global_end_time - global_start_time);
 }
 
-void print_statistic(struct StatisticTable*)
+void print_statistic(struct StatisticTable* stat)
 {
+
 }
