@@ -78,7 +78,8 @@ void buffer_insert_with_rejected(
 
     buffer->requests[current_index] = *in_request;
 
-    buffer->current_index = (current_index + 1) % buffer->size;
+    current_index = (current_index + 1) % buffer->size;
+    buffer->current_index = current_index;
   }
   if (err_num != NULL)
   {
@@ -90,8 +91,8 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
 {
   u32 max_priority = 0;
   u32 current_priority = 0;
-  size_t current_index = 0;
-  size_t request_index = 0;
+  size_t current_index = buffer->current_index;
+  size_t request_index = buffer->current_index;
   int err = 0;
   bool is_buffer_full = false;
   size_t i;
@@ -103,7 +104,7 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
 
   for (i = 0; i < buffer->size; ++i)
   {
-    current_index = (buffer->current_index + i) % buffer->size;
+    current_index = (current_index + i) % buffer->size;
     if (buffer->requests[current_index].is_active)
     {
       is_buffer_full = true;
@@ -129,7 +130,7 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
   if (is_buffer_full)
   {
     *request = buffer->requests[request_index];
-    buffer->current_index = request_index;
+    buffer->current_index = request_index + 1;
     buffer->requests[request_index].is_active = false;
   }
   else
@@ -343,7 +344,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar, 
 
   event.time_in_sec =
     (double)(global_current_time - global_start_time)
-    / CLOCKS_PER_SEC + rand() % 3;
+    / CLOCKS_PER_SEC + rand() % 2;
 
   insert_event(calendar, &event);
 

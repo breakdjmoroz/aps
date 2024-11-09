@@ -7,10 +7,10 @@
 #include "statistic.h"
 
 #define N_DEVICES     (1)
-#define N_EVENTS      (32000)
+#define N_EVENTS      (3200000)
 #define N_GENERATORS  (10)
 #define BUF_SIZE      (4)
-#define STOP_TIME     (2.000)
+#define STOP_TIME     (3.000)
 
 const struct Event BREAK_EVENT =
 {
@@ -64,11 +64,12 @@ int main()
       is_modeling = false;
     }
 
-    printf("<<< time (sec): %lf\n", event.time_in_sec);
     switch(event.type)
     {
       case GET_REQUEST:
+        printf("==========================\n");
         printf(">>> event: GET_REQUEST\n");
+        printf("time (sec): %lf\n", event.time_in_sec);
         request = event.data.request;
         printf(">>>>>>>>> request: generator's num is %d\n", request.gen_number);
         if(is_generating_request)
@@ -95,12 +96,14 @@ int main()
           }
           else
           {
-            printf(">>>>>>>>> buffer [%d]: insert a request\n", mss->buffer->current_index - 1);
+            printf(">>>>>>>>> buffer [%d]: insert a request\n", mss->buffer->current_index);
           }
         }
         break;
       case DEVICE_FREE:
+        printf("==========================\n");
         printf(">>> event: DEVICE_FREE\n");
+        printf("time (sec): %lf\n", event.time_in_sec);
         int err;
         mss->devices[event.data.device.number].is_free = true;
         printf(">>>>>>>>> device [%d]: service finished\n", event.data.device.number);
@@ -126,7 +129,9 @@ int main()
         }
         break;
       case STOP_MODELING:
+        printf("==========================\n");
         printf(">>> event: STOP_MODELING\n");
+        printf("time (sec): %lf\n", event.time_in_sec);
         is_generating_request = false;
         break;
     }
