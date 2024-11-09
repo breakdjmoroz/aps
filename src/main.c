@@ -41,16 +41,16 @@ int main()
   struct EventCalendar* calendar = new_calendar(N_EVENTS);
   struct Environment* env = new_env(N_GENERATORS);
 
-  struct StatisticTable* stat = new_stat(N_EVENTS, N_GENERATORS, N_DEVICES);
-  start_statistic();
+  struct StatisticTable* stat = new_stat(N_GENERATORS, N_DEVICES);
+  start_statistic(stat);
 
+  global_current_time = 0.0;
   insert_event(calendar, &BREAK_EVENT);
 
   for (i = 0; i < env->generators_len; ++i)
   {
     struct Request tmp_request;
     generate_request_for(env->generators[i].number, calendar, &tmp_request);
-    collect_statistic(stat, &tmp_request, GENERATED_REQUEST);
   }
 
   while(is_modeling)

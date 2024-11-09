@@ -7,48 +7,57 @@ extern clock_t global_start_time;
 extern double global_current_time;
 extern clock_t global_end_time;
 
-struct StatisticTable* new_stat(size_t statistics_len, size_t generators_num, size_t devices_num)
+struct StatisticTable* new_stat(size_t generators_num, size_t devices_num)
 {
-  struct StatisticTable* new_stat = (struct StatisticTable*)malloc(sizeof(struct StatisticTable));
-  if (new_stat != NULL)
+  struct GeneratorStatistic* generators;
+  struct DeviceStatistic* devices;
+  struct StatisticTable* stat = (struct StatisticTable*)malloc(sizeof(struct StatisticTable));
+  if (stat != NULL)
   {
-    new_stat->statistics_len = statistics_len;
-    new_stat->generators_num = generators_num;
-    new_stat->devices_num = devices_num;
+    generators = (struct GeneratorStatistic*)malloc(sizeof(struct GeneratorStatistic) * generators_num);
+    devices = (struct DeviceStatistic*)malloc(sizeof(struct DeviceStatistic) * devices_num);
 
-    new_stat->statistics = (struct Statistic*)malloc(sizeof(struct Request) * statistics_len);
-    new_stat->average_waiting_time = (double*)malloc(sizeof(double) * generators_num);
-    new_stat->average_serving_time = (double*)malloc(sizeof(double) * generators_num);
-    new_stat->average_total_time = (double*)malloc(sizeof(double) * generators_num);
-    new_stat->average_total_time_device = (double*)malloc(sizeof(double) * devices_num);
-    
-    if (!new_stat->statistics || !new_stat->average_waiting_time ||
-        !new_stat->average_serving_time || !new_stat->average_total_time ||
-        !new_stat->average_total_time_device)
+    if (generators != NULL && devices != NULL)
     {
-      free(new_stat->statistics);
-      free(new_stat->average_waiting_time);
-      free(new_stat->average_serving_time);
-      free(new_stat->average_total_time);
-      free(new_stat->average_total_time_device);
-      free(new_stat);
-      new_stat = NULL;
+      stat->generators = generators;
+      stat->devices = devices;
+      stat->generators_num = 0;
+      stat->devices_num = 0;
+      stat->total_realization_time = 0.0;
     }
-
-    new_stat->total_realization_time = 0.0;
-
+    else
+    {
+      free(generators);
+      free(devices);
+      free(stat);
+    }
   }
-  return new_stat;
+  return stat;
 }
 
-void start_statistic()
+void start_statistic(struct StatisticTable* stat)
 {
+  size_t i = 0;
+
+  for(i = 0; i < stat->generators_num; ++i)
+  {
+   stat->generators[i].total_amount = 0;
+   stat->generators[i].rejected_amount = 0;
+   stat->generators[i].average_waiting_time = 0.0;
+   stat->generators[i].average_serving_time = 0.0;
+   stat->generators[i].average_total_time = 0.0;
+  }
+  for(i = 0; i < stat->devices_num; ++i)
+  {
+    stat->devices[i].average_total_time = 0.0;
+  }
+  
   global_start_time = clock();
-  global_current_time = 0.0;
 }
 
-void collect_statistic(struct StatisticTable*, struct Request*, int)
+void collect_statistic(struct StatisticTable* stat, struct Request* request, int mode)
 {
+
 }
 
 void stop_statistic(struct StatisticTable* stat)
