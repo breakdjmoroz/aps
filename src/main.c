@@ -6,11 +6,13 @@
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (1)
-#define N_EVENTS      (3200000)
-#define N_GENERATORS  (3)
-#define BUF_SIZE      (4)
-#define STOP_TIME     (2.000)
+#define N_DEVICES     (10)
+#define N_EVENTS      (32000)
+#define N_GENERATORS  (30)
+#define BUF_SIZE      (40)
+#define STOP_TIME     (20.000)
+
+#define ONESHOT_MODE  (false)
 
 const struct Event BREAK_EVENT =
 {
@@ -69,11 +71,13 @@ int main()
     switch(event.type)
     {
       case GET_REQUEST:
+#if ONESHOT_MODE
         printf("==========================\n");
         printf(">>> event: GET_REQUEST\n");
         printf("time (sec): %lf\n", global_current_time);
-        request = event.data.request;
         printf(">>>>>>>>> request: generator's num is %d\n", request.gen_number);
+#endif
+        request = event.data.request;
         if(is_generating_request)
         {
           generate_request_for(request.gen_number, calendar, NULL);
@@ -81,38 +85,52 @@ int main()
         device_index = select_device(mss);
         if (device_index >= 0)
         {
+#if ONESHOT_MODE
           printf(">>>>>>>>> device [%d]: serve requset immideatly\n", device_index);
+#endif
           serve_a_request(&request, &(mss->devices[device_index]), calendar);
           collect_statistic(stat, &request, SERVED_REQUEST);
         }
         else
         {
+#if ONESHOT_MODE
           printf(">>>>>>>>> device: send request to buffer\n", device_index);
+#endif
           int err;
           struct Request rejected_request;
           buffer_insert_with_rejected(mss->buffer, &request, &rejected_request, &err);
           if (!is_equal_requests(rejected_request, EMPTY_REQUEST))
           {
+#if ONESHOT_MODE
             printf(">>>>>>>>> buffer: reject request under pointer [%d]\n", (mss->buffer->current_index - 1) % mss->buffer->size);
+#endif
             collect_statistic(stat, &rejected_request, REJECTED_REQUEST);
           }
           else
           {
+#if ONESHOT_MODE
             printf(">>>>>>>>> buffer [%d]: insert a request\n", (mss->buffer->current_index - 1) % mss->buffer->size);
+#endif
           }
         }
         break;
       case DEVICE_FREE:
+#if ONESHOT_MODE
         printf("==========================\n");
         printf(">>> event: DEVICE_FREE\n");
         printf("time (sec): %lf\n", global_current_time);
+#endif
         int err;
         mss->devices[event.data.device.number].is_free = true;
+#if ONESHOT_MODE
         printf(">>>>>>>>> device [%d]: service finished\n", event.data.device.number);
+#endif
         buffer_extract(mss->buffer, &request, &err);
         if (err == 0)
         {
+#if ONESHOT_MODE
           printf(">>>>>>>>> buffer [%d]: extract a request\n", (mss->buffer->current_index - 1) % mss->buffer->size);
+#endif
           device_index = select_device(mss);
           if (device_index >= 0)
           {
@@ -122,25 +140,33 @@ int main()
         }
         else if (!is_generating_request)
         {
+#if ONESHOT_MODE
           printf(">>>>>>>>> buffer: all requests served\n");
+#endif
           is_modeling = false;
         }
         else
         {
+#if ONESHOT_MODE
           printf(">>>>>>>>> device [%d]: halt\n", event.data.device.number);
+#endif
         }
         break;
       case STOP_MODELING:
+#if ONESHOT_MODE
         printf("==========================\n");
         printf("||     STOP_MODELING    ||\n");
         printf("==========================\n");
         printf("time (sec): %lf\n", global_current_time);
+#endif
         is_generating_request = false;
         break;
     }
   }
 
+#if ONESHOT_MODE
   printf(">>> event: END_MODELING\n");
+#endif
 
   stop_statistic(stat);
 
