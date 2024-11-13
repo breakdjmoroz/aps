@@ -34,6 +34,7 @@ struct StatisticTable* new_stat(size_t, size_t);
 
 void start_statistic();
 void collect_statistic(struct StatisticTable*, struct Request*, int);
+void collect_statistic_device(struct StatisticTable*, struct Device*, size_t);
 void stop_statistic(struct StatisticTable*);
 
 void print_statistic(struct StatisticTable*);

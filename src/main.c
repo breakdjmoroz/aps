@@ -6,11 +6,11 @@
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (11)
+#define N_DEVICES     (4)
 #define N_EVENTS      (32000)
 #define N_GENERATORS  (30)
-#define BUF_SIZE      (100)
-#define STOP_TIME     (20.000)
+#define BUF_SIZE      (5)
+#define STOP_TIME     (100.000)
 
 #define ONESHOT_MODE  (false)
 
@@ -30,9 +30,7 @@ const struct Request EMPTY_REQUEST =
   .is_active = false,
 };
 
-clock_t global_start_time;
 double global_current_time;
-clock_t global_end_time;
 
 int main()
 {
@@ -71,13 +69,13 @@ int main()
     switch(event.type)
     {
       case GET_REQUEST:
+        request = event.data.request;
 #if ONESHOT_MODE
         printf("==========================\n");
         printf(">>> event: GET_REQUEST\n");
         printf("time (sec): %lf\n", global_current_time);
         printf(">>>>>>>>> request: generator's num is %d\n", request.gen_number);
 #endif
-        request = event.data.request;
         if(is_generating_request)
         {
           generate_request_for(request.gen_number, calendar, NULL);
@@ -122,6 +120,7 @@ int main()
 #endif
         int err;
         mss->devices[event.data.device.number].is_free = true;
+        collect_statistic_device(stat, &(mss->devices[event.data.device.number]), event.data.device.number);
 #if ONESHOT_MODE
         printf(">>>>>>>>> device [%d]: service finished\n", event.data.device.number);
 #endif

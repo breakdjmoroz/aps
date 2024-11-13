@@ -4,9 +4,7 @@
 
 #include "statistic.h"
 
-extern clock_t global_start_time;
 extern double global_current_time;
-extern clock_t global_end_time;
 
 struct StatisticTable* new_stat(size_t generators_num, size_t devices_num)
 {
@@ -52,8 +50,6 @@ void start_statistic(struct StatisticTable* stat)
   {
     stat->devices[i].average_total_time = 0.0;
   }
-  
-  global_start_time = clock();
 }
 
 void collect_statistic(struct StatisticTable* stat, struct Request* request, int mode)
@@ -88,8 +84,14 @@ void collect_statistic(struct StatisticTable* stat, struct Request* request, int
           += total_time;
         break;
       case REJECTED_REQUEST:
+        waiting_time = request->buf_time - request->gen_time;
+        total_time = waiting_time;
         stat->generators[request->gen_number].total_amount += 1;
         stat->generators[request->gen_number].rejected_amount += 1;
+        stat->generators[request->gen_number].average_waiting_time
+          += waiting_time;
+        stat->generators[request->gen_number].average_total_time
+          += total_time;
         break;
       case HALTED_DEVICE:
         /*TODO: insert definition */
@@ -98,10 +100,14 @@ void collect_statistic(struct StatisticTable* stat, struct Request* request, int
   }
 }
 
+void collect_statistic_device(struct StatisticTable* stat, struct Device* device, size_t number)
+{
+  stat->devices[number].average_total_time += global_current_time - device->use_time;
+}
+
 void stop_statistic(struct StatisticTable* stat)
 {
-  global_end_time = clock();
-  stat->total_realization_time = (double)(global_end_time - global_start_time);
+  stat->total_realization_time = global_current_time;
 }
 
 void print_statistic(struct StatisticTable* stat)
@@ -112,6 +118,7 @@ void print_statistic(struct StatisticTable* stat)
   double serving_time = 0.0;
   double total_time = 0.0;
   double reject_probability = 0.0;
+  double realization_time = stat->total_realization_time;
 
   printf("=================GENERATORS_STATISTIC=================\n");
   printf("|gen_№|total|p_reject|avr(wait)|avr(serve)|avr(total)|\n");
@@ -144,4 +151,21 @@ void print_statistic(struct StatisticTable* stat)
   }
 
   printf("======================================================\n");
+
+  printf("\n");
+
+  printf("====DEVICES_STATISTIC===\n");
+  printf("|device_num|usage_ratio|\n");
+  printf("|----------+-----------|\n");
+
+  for (i = 0; i < stat->devices_num; ++i)
+  {
+    printf(
+        "|%10d|%11lf|\n",
+        i,
+        stat->devices[i].average_total_time / realization_time
+        );
+  }
+
+  printf("========================\n");
 }

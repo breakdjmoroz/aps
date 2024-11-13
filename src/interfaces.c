@@ -72,6 +72,7 @@ void buffer_insert_with_rejected(
       {
         *rejected_request = buffer->requests[current_index];
         rejected_request->is_active = false;
+        rejected_request->buf_time = global_current_time;
         break;
       }
     }
@@ -179,6 +180,7 @@ void  allocate_devices(struct Device* devices, size_t devices_len)
     {
       devices[i].number = (u32)i;
       devices[i].is_free = true;
+      devices[i].use_time = 0.0;
     }
   }
 }
@@ -218,7 +220,7 @@ struct MassServiceSystem* new_mss(size_t devices_len, size_t buf_size)
   if (mss != NULL)
   {
     mss->devices_len=devices_len;
-    mss->devices = (struct Device*)malloc(sizeof(struct Device*) * devices_len);
+    mss->devices = (struct Device*)malloc(sizeof(struct Device) * devices_len);
     if (mss->devices != NULL)
     {
       allocate_devices(mss->devices, devices_len);
@@ -363,6 +365,7 @@ void serve_a_request(struct Request* request, struct Device* device, struct Even
   request->dev_time = global_current_time + rand_exp(RAND_EXP_LAMBDA) * 0.01;
 
   device->is_free = false;
+  device->use_time = global_current_time;
 
   struct Event event =
   {

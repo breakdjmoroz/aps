@@ -7,9 +7,7 @@
 
 extern const struct Request EMPTY_REQUEST;
 
-extern clock_t global_start_time;
 extern double global_current_time;
-extern clock_t global_end_time;
 
 bool is_equal_requests(struct Request, struct Request);
 bool is_equal_events(struct Event, struct Event);
@@ -30,7 +28,7 @@ struct Environment* new_env(size_t);
 struct Event get_next_event(const struct EventCalendar* const);
 void generate_request_for(u32, struct EventCalendar*, struct Request*);
 
-void serve_a_request();
+void serve_a_request(struct Request*, struct Device*, struct EventCalendar*);
 
 void insert_event(struct EventCalendar*, struct Event*);
 

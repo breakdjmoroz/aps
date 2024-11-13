@@ -8,16 +8,9 @@
 typedef uint16_t u16;
 typedef uint32_t u32;
 
-struct Buffer
-{
-  struct Request* requests;
-  size_t size;
-  size_t current_index;
-};
-
 struct Request
 {
-  int gen_number;
+  u32 gen_number;
   double gen_time;
   double buf_time;
   double dev_time;
@@ -28,6 +21,14 @@ struct Device
 {
   u32 number;
   bool is_free;
+  double use_time;
+};
+
+struct Buffer
+{
+  struct Request* requests;
+  size_t size;
+  size_t current_index;
 };
 
 struct Generator
