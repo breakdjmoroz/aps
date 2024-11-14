@@ -12,7 +12,7 @@
 #define BUF_SIZE      (5)
 #define STOP_TIME     (100.000)
 
-#define ONESHOT_MODE  (false)
+#define ONESHOT_MODE  (true)
 
 const struct Event BREAK_EVENT =
 {
@@ -161,6 +161,10 @@ int main()
         is_generating_request = false;
         break;
     }
+
+#if ONESHOT_MODE
+    getchar();
+#endif
   }
 
 #if ONESHOT_MODE
