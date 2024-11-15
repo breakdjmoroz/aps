@@ -6,13 +6,13 @@
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (4)
+#define N_DEVICES     (2)
 #define N_EVENTS      (32000)
-#define N_GENERATORS  (30)
-#define BUF_SIZE      (5)
-#define STOP_TIME     (100.000)
+#define N_GENERATORS  (2)
+#define BUF_SIZE      (2)
+#define STOP_TIME     (1.000)
 
-#define ONESHOT_MODE  (true)
+#define ONESHOT_MODE  (false)
 
 const struct Event BREAK_EVENT =
 {
@@ -55,12 +55,14 @@ int main()
 
   while(is_modeling)
   {
-    struct Event event = get_next_event(calendar);
+    struct Event event = get_next_event(calendar, NULL);
     struct Request request;
     int device_index;
 
-    global_current_time = event.time_in_sec;
-
+    if (!is_equal_events(event, BREAK_EVENT))
+    {
+      global_current_time = event.time_in_sec;
+    }
     if (!is_generating_request && is_equal_events(event, BREAK_EVENT))
     {
       is_modeling = false;
@@ -142,7 +144,6 @@ int main()
 #if ONESHOT_MODE
           printf(">>>>>>>>> buffer: all requests served\n");
 #endif
-          is_modeling = false;
         }
         else
         {

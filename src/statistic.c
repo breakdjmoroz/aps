@@ -29,6 +29,7 @@ struct StatisticTable* new_stat(size_t generators_num, size_t devices_num)
       free(generators);
       free(devices);
       free(stat);
+      stat = NULL;
     }
   }
   return stat;

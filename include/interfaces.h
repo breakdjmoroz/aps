@@ -25,7 +25,7 @@ struct MassServiceSystem* new_mss(size_t, size_t);
 struct EventCalendar* new_calendar(size_t);
 struct Environment* new_env(size_t);
 
-struct Event get_next_event(const struct EventCalendar* const);
+struct Event get_next_event(const struct EventCalendar* const, bool*);
 void generate_request_for(u32, struct EventCalendar*, struct Request*);
 
 void serve_a_request(struct Request*, struct Device*, struct EventCalendar*);

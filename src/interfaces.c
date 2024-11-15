@@ -42,8 +42,6 @@ int buffer_insert(struct Buffer* const buffer, struct Request* request)
 
   buffer_insert_with_rejected(buffer, request, &rejected_request, &err);
 
-  free(&rejected_request);
-
   return err;
 }
 
@@ -105,7 +103,7 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
     err = -1;
   }
 
-  for (i = 0; i < buffer->size; ++i)
+  for (i = 0; i < buffer->size && !err; ++i)
   {
     current_index = (current_index + i) % buffer->size;
     if (buffer->requests[current_index].is_active)
@@ -131,7 +129,7 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
     }
   }
 
-  if (is_buffer_full)
+  if (is_buffer_full && !err)
   {
     buffer->requests[request_index].buf_time = global_current_time;
     *request = buffer->requests[request_index];
@@ -308,22 +306,29 @@ struct Environment* new_env(size_t gen_num)
   return env;
 }
 
-struct Event get_next_event(const struct EventCalendar* const calendar)
+struct Event get_next_event(const struct EventCalendar* const calendar, bool* err)
 {
   size_t i = 0;
   double next_time = DBL_MAX;
   size_t next_time_index = 0;
+  bool is_empty = true;
 
   for (i = 0; i < calendar->events_len; ++i)
   {
     if(calendar->events[i].is_active)
     {
+      is_empty = false;
       if (calendar->events[i].time_in_sec < next_time)
       {
         next_time = calendar->events[i].time_in_sec;
         next_time_index = i;
       }
     }
+  }
+
+  if (err != NULL)
+  {
+    *err = is_empty;
   }
 
   calendar->events[next_time_index].is_active = false;
@@ -362,7 +367,7 @@ void generate_request_for(u32 generator_number, struct EventCalendar* calendar, 
 
 void serve_a_request(struct Request* request, struct Device* device, struct EventCalendar* calendar)
 {
-  request->dev_time = global_current_time + rand_exp(RAND_EXP_LAMBDA) * 0.01;
+  request->dev_time = global_current_time + rand_exp(RAND_EXP_LAMBDA) * 0.1;
 
   device->is_free = false;
   device->use_time = global_current_time;
