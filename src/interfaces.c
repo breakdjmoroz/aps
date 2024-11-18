@@ -408,33 +408,50 @@ void insert_event(struct EventCalendar* calendar, struct Event* event)
   calendar->events[index] = *event;
 }
 
-void print_calendar(struct EventCalendar* calendar)
+void print_calendar(const struct EventCalendar* const calendar)
 {
-    printf("Current time (sec): %lf\n", global_current_time);
-    for (size_t i = 0; i < calendar->events_len; ++i)
+  printf("Current time (sec): %lf\n", global_current_time);
+  for (size_t i = 0; i < calendar->events_len; ++i)
+  {
+    if (i < calendar->generators_len)
     {
-      if (i < calendar->generators_len)
-      {
-        printf("|  Generator[%d] | Next time: %lf | Active flag: %d |\n",
-            i,
-            calendar->events[i].time_in_sec,
-            calendar->events[i].is_active
-            );
-      }
-      else if (i < calendar->devices_len + calendar->generators_len)
-      {
-        printf("|   Device[%d]   | Next time: %lf | Active flag: %d |\n",
-            i - calendar->generators_len,
-            calendar->events[i].time_in_sec,
-            calendar->events[i].is_active
-            );
-      }
-      else
-      {
-        printf("| Stop modeling | Next time: %lf | Active flag: %d |\n",
-            calendar->events[i].time_in_sec,
-            calendar->events[i].is_active
-            );
-      }
+      printf("|  Generator[%d] | Next time: %lf | Active flag: %d |\n",
+          i,
+          calendar->events[i].time_in_sec,
+          calendar->events[i].is_active
+          );
     }
+    else if (i < calendar->devices_len + calendar->generators_len)
+    {
+      printf("|   Device[%d]   | Next time: %lf | Active flag: %d |\n",
+          i - calendar->generators_len,
+          calendar->events[i].time_in_sec,
+          calendar->events[i].is_active
+          );
+    }
+    else
+    {
+      printf("| Stop modeling | Next time: %lf | Active flag: %d |\n",
+          calendar->events[i].time_in_sec,
+          calendar->events[i].is_active
+          );
+    }
+  }
+}
+
+void print_buffer(const struct Buffer* const buf)
+{
+  printf("Buffer: ");
+  for (size_t i = 0; i < buf->size; ++i)
+  {
+    if (buf->requests[i].is_active)
+    {
+      printf("| %d ", buf->requests[i].gen_number);
+    }
+    else
+    {
+      printf("| --- ");
+    }
+  }
+  printf("|\n");
 }

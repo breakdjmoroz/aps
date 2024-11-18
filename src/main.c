@@ -6,8 +6,8 @@
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (20)
-#define N_GENERATORS  (2)
+#define N_DEVICES     (1)
+#define N_GENERATORS  (5)
 #define BUF_SIZE      (2)
 #define STOP_TIME     (2.000)
 #define ONESHOT_MODE  (true)
@@ -54,6 +54,7 @@ int main()
   {
 #if ONESHOT_MODE
     print_calendar(calendar);
+    print_buffer(mss->buffer);
 #endif
 
     struct Event event = get_next_event(calendar, NULL);
@@ -117,6 +118,7 @@ int main()
 
 #if ONESHOT_MODE
   print_calendar(calendar);
+  print_buffer(mss->buffer);
 #endif
   stop_statistic(stat);
   print_statistic(stat);

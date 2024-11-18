@@ -32,6 +32,7 @@ void serve_a_request(struct Request*, struct Device*, struct EventCalendar*);
 
 void insert_event(struct EventCalendar*, struct Event*);
 
-void print_calendar(struct EventCalendar*);
+void print_calendar(const struct EventCalendar* const);
+void print_buffer(const struct Buffer* const);
 
 #endif
