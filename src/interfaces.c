@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -394,7 +395,7 @@ void insert_event(struct EventCalendar* calendar, struct Event* event)
       index = event->data.request.gen_number;
       break;
     case DEVICE_FREE:
-      index = event->data.device.number + calendar->devices_len;
+      index = event->data.device.number + calendar->generators_len;
       break;
     case STOP_MODELING:
       index = calendar->events_len - 1;
@@ -405,4 +406,35 @@ void insert_event(struct EventCalendar* calendar, struct Event* event)
   }
   
   calendar->events[index] = *event;
+}
+
+void print_calendar(struct EventCalendar* calendar)
+{
+    printf("Current time (sec): %lf\n", global_current_time);
+    for (size_t i = 0; i < calendar->events_len; ++i)
+    {
+      if (i < calendar->generators_len)
+      {
+        printf("|  Generator[%d] | Next time: %lf | Active flag: %d |\n",
+            i,
+            calendar->events[i].time_in_sec,
+            calendar->events[i].is_active
+            );
+      }
+      else if (i < calendar->devices_len + calendar->generators_len)
+      {
+        printf("|   Device[%d]   | Next time: %lf | Active flag: %d |\n",
+            i - calendar->generators_len,
+            calendar->events[i].time_in_sec,
+            calendar->events[i].is_active
+            );
+      }
+      else
+      {
+        printf("| Stop modeling | Next time: %lf | Active flag: %d |\n",
+            calendar->events[i].time_in_sec,
+            calendar->events[i].is_active
+            );
+      }
+    }
 }
