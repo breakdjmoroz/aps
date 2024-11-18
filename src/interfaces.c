@@ -169,9 +169,10 @@ int select_device(const struct MassServiceSystem* const mss)
   return device_index;
 }
 
-void  allocate_devices(struct Device* devices, size_t devices_len)
+static void allocate_devices(struct Device* devices, size_t devices_len)
 {
-  size_t i = 0;
+  size_t i;
+
   if (devices != NULL)
   {
     for(i = 0; i < devices_len; ++i)
@@ -183,7 +184,7 @@ void  allocate_devices(struct Device* devices, size_t devices_len)
   }
 }
 
-bool allocate_buffer(struct Buffer* buffer, size_t buf_size)
+static bool allocate_buffer(struct Buffer* buffer, size_t buf_size)
 {
   size_t i = 0;
   bool is_allocated = false;
@@ -252,29 +253,29 @@ struct MassServiceSystem* new_mss(size_t devices_len, size_t buf_size)
   return mss;
 }
 
-struct EventCalendar* new_calendar(size_t events_len)
+struct EventCalendar* new_calendar(size_t generators_len, size_t devices_len)
 {
-  size_t i = 0;
-  bool is_allocated = true;
+  size_t events_len = generators_len + devices_len + 1; /* Plus one space for STOP_MODELING */
   struct EventCalendar* calendar = (struct EventCalendar*)malloc(sizeof(struct EventCalendar));
+  struct Event* events = (struct Event*)malloc(sizeof(struct Event) * events_len);
 
-  if (calendar != NULL)
+  if (calendar && events)
   {
-    calendar->current_index = 0;
-    calendar->events_len=events_len;
-    calendar->events = (struct Event*)malloc(sizeof(struct Event) * events_len);
-    if (calendar->events != NULL)
+    calendar->generators_len = generators_len;
+    calendar->devices_len = devices_len;
+    calendar->events_len = events_len;
+    calendar->events = events;
+
+    for(size_t i = 0; i < events_len; ++i)
     {
-      for(i = 0; i < events_len; ++i)
-      {
-        calendar->events[i].is_active = false;
-      }
+      calendar->events[i].is_active = false;
     }
-    else
-    {
-      free(calendar);
-      calendar = NULL;
-    }
+  }
+
+  if (!events)
+  {
+    free(calendar);
+    calendar = NULL;
   }
 
   return calendar;
@@ -385,7 +386,23 @@ void serve_a_request(struct Request* request, struct Device* device, struct Even
 
 void insert_event(struct EventCalendar* calendar, struct Event* event)
 {
-  size_t i = calendar->current_index;
-  calendar->events[i] = *event;
-  ++calendar->current_index;
+  size_t index = 0;
+
+  switch(event->type)
+  {
+    case GET_REQUEST:
+      index = event->data.request.gen_number;
+      break;
+    case DEVICE_FREE:
+      index = event->data.device.number + calendar->devices_len;
+      break;
+    case STOP_MODELING:
+      index = calendar->events_len - 1;
+      break;
+    default:
+      return;
+      break;
+  }
+  
+  calendar->events[index] = *event;
 }

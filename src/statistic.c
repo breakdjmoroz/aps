@@ -8,30 +8,28 @@ extern double global_current_time;
 
 struct StatisticTable* new_stat(size_t generators_num, size_t devices_num)
 {
-  struct GeneratorStatistic* generators;
-  struct DeviceStatistic* devices;
   struct StatisticTable* stat = (struct StatisticTable*)malloc(sizeof(struct StatisticTable));
-  if (stat != NULL)
-  {
-    generators = (struct GeneratorStatistic*)malloc(sizeof(struct GeneratorStatistic) * generators_num);
-    devices = (struct DeviceStatistic*)malloc(sizeof(struct DeviceStatistic) * devices_num);
+  struct GeneratorStatistic* generators = (struct GeneratorStatistic*)malloc(sizeof(struct GeneratorStatistic) * generators_num);
+  struct DeviceStatistic* devices = (struct DeviceStatistic*)malloc(sizeof(struct DeviceStatistic) * devices_num);
 
-    if (generators != NULL && devices != NULL)
-    {
-      stat->generators = generators;
-      stat->devices = devices;
-      stat->generators_num = generators_num;
-      stat->devices_num = devices_num;
-      stat->total_realization_time = 0.0;
-    }
-    else
-    {
-      free(generators);
-      free(devices);
-      free(stat);
-      stat = NULL;
-    }
+  if (stat && generators && devices)
+  {
+    stat->generators      = generators;
+    stat->devices         = devices;
+    stat->generators_num  = generators_num;
+    stat->devices_num     = devices_num;
+
+    stat->total_realization_time = 0.0;
   }
+
+  if (!generators || !devices)
+  {
+    free(generators);
+    free(devices);
+    free(stat);
+    stat = NULL;
+  }
+
   return stat;
 }
 
@@ -47,6 +45,7 @@ void start_statistic(struct StatisticTable* stat)
    stat->generators[i].average_serving_time = 0.0;
    stat->generators[i].average_total_time = 0.0;
   }
+
   for(i = 0; i < stat->devices_num; ++i)
   {
     stat->devices[i].average_total_time = 0.0;
@@ -60,6 +59,7 @@ void collect_statistic(struct StatisticTable* stat, struct Request* request, int
     double waiting_time = 0.0;
     double serving_time = 0.0;
     double total_time = 0.0;
+
     switch (mode)
     {
       case SERVED_REQUEST:
@@ -93,9 +93,6 @@ void collect_statistic(struct StatisticTable* stat, struct Request* request, int
           += waiting_time;
         stat->generators[request->gen_number].average_total_time
           += total_time;
-        break;
-      case HALTED_DEVICE:
-        /*TODO: insert definition */
         break;
     }
   }

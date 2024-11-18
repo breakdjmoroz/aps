@@ -22,7 +22,7 @@ void buffer_extract(struct Buffer* const, struct Request*, int* const);
 int select_device(const struct MassServiceSystem* const);
 
 struct MassServiceSystem* new_mss(size_t, size_t);
-struct EventCalendar* new_calendar(size_t);
+struct EventCalendar* new_calendar(size_t, size_t);
 struct Environment* new_env(size_t);
 
 struct Event get_next_event(const struct EventCalendar* const, bool*);

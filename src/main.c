@@ -7,11 +7,9 @@
 #include "statistic.h"
 
 #define N_DEVICES     (2)
-#define N_EVENTS      (32000)
 #define N_GENERATORS  (2)
 #define BUF_SIZE      (2)
-#define STOP_TIME     (1.000)
-
+#define STOP_TIME     (2.000)
 #define ONESHOT_MODE  (false)
 
 const struct Event BREAK_EVENT =
@@ -38,7 +36,7 @@ int main()
   bool is_modeling = true;
   bool is_generating_request = true;
   struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
-  struct EventCalendar* calendar = new_calendar(N_EVENTS);
+  struct EventCalendar* calendar = new_calendar(N_GENERATORS, N_DEVICES);
   struct Environment* env = new_env(N_GENERATORS);
 
   struct StatisticTable* stat = new_stat(N_GENERATORS, N_DEVICES);
@@ -55,6 +53,34 @@ int main()
 
   while(is_modeling)
   {
+    printf("Current time (sec): %lf\n", global_current_time);
+    for (size_t i = 0; i < calendar->events_len; ++i)
+    {
+      if (i < calendar->generators_len)
+      {
+        printf("|  Generator[%d] | Next time: %lf | Active flag: %d |\n",
+            i,
+            calendar->events[i].time_in_sec,
+            calendar->events[i].is_active
+            );
+      }
+      else if (i < calendar->devices_len + calendar->generators_len)
+      {
+        printf("|   Device[%d]   | Next time: %lf | Active flag: %d |\n",
+            i - calendar->generators_len,
+            calendar->events[i].time_in_sec,
+            calendar->events[i].is_active
+            );
+      }
+      else
+      {
+        printf("| Stop modeling | Next time: %lf | Active flag: %d |\n",
+            calendar->events[i].time_in_sec,
+            calendar->events[i].is_active
+            );
+      }
+    }
+
     struct Event event = get_next_event(calendar, NULL);
     struct Request request;
     int device_index;
@@ -63,7 +89,7 @@ int main()
     {
       global_current_time = event.time_in_sec;
     }
-    if (!is_generating_request && is_equal_events(event, BREAK_EVENT))
+    else
     {
       is_modeling = false;
     }
