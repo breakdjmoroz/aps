@@ -1,21 +1,36 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <time.h>
 
 #include "types.h"
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (2)
-#define N_GENERATORS  (2)
-#define BUF_SIZE      (2)
-#define STOP_TIME     (100.000)
-#define ONESHOT_MODE  (true)
+#define N_PARAMS      (5)
+
+const char MESSAGE_USAGE[] = "Usage: model.out N_DEV N_GEN BUF_SIZE STOP_TIME MODE\nN_DEV - amount of devices\nN_GEN - amount of generators\nBUF_SIZE - buffer size\nSTOP_TIME - simulation end time\nMODE - 0 means automatic mode, 1 means oneshot mode\n";
 
 double global_current_time;
 
-int main()
+int main(int argc, char* argv[])
 {
+  if (argc != (1 + N_PARAMS))
+  {
+    fprintf(stderr, "Your input:\n");
+    for (size_t i = 0; i < argc; ++i)
+    {
+      fprintf(stderr, "%s\n", argv[i]);
+    }
+    fprintf(stderr, "Wrong amount of arguments!\n%s\n", MESSAGE_USAGE);
+    return -1;
+  }
+
+  const size_t N_DEVICES    = (size_t)atoi(argv[1]);
+  const size_t N_GENERATORS = (size_t)atoi(argv[2]);
+  const size_t BUF_SIZE     = (size_t)atoi(argv[3]);
+  const double STOP_TIME    = (double)atof(argv[4]);
+  const bool ONESHOT_MODE   = (bool)atoi(argv[5]);
+
   size_t i;
   bool is_modeling = true;
   struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
