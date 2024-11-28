@@ -46,21 +46,14 @@ void create_break_event(struct EventCalendar* calendar, double break_time)
   insert_event(calendar, &break_event);
 }
 
-bool is_equal_requests(struct Request right, struct Request left)
+bool is_empty_request(struct Request request)
 {
-  return (right.gen_number == left.gen_number &&
-      right.gen_time == left.gen_time &&
-      right.buf_time == left.buf_time &&
-      right.dev_time == left.dev_time &&
-      right.is_active == left.is_active);
+  return !(request.gen_number == EMPTY_REQUEST.gen_number &&
+      request.gen_time == EMPTY_REQUEST.gen_time &&
+      request.buf_time == EMPTY_REQUEST.buf_time &&
+      request.dev_time == EMPTY_REQUEST.dev_time &&
+      request.is_active == EMPTY_REQUEST.is_active);
 }
-
-bool is_equal_events(struct Event right, struct Event left)
-{
-  return (right.type == left.type &&
-      right.time_in_sec == left.time_in_sec);
-}
-
 
 int buffer_insert(struct Buffer* const buffer, struct Request* request)
 {

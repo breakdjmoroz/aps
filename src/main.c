@@ -105,7 +105,7 @@ void run(
           int err;
           struct Request rejected_request;
           buffer_insert_with_rejected(mss->buffer, &request, &rejected_request, &err);
-          if (!is_equal_requests(rejected_request, EMPTY_REQUEST))
+          if (is_empty_request(rejected_request))
           {
             collect_statistic(stat, &rejected_request, REJECTED_REQUEST);
           }

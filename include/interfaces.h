@@ -12,8 +12,7 @@ extern double global_current_time;
 void create_break_event(struct EventCalendar*, double);
 bool is_stop_modeling(struct Event);
 
-bool is_equal_requests(struct Request, struct Request);
-bool is_equal_events(struct Event, struct Event);
+bool is_empty_request(struct Request);
 
 void buffer_insert_with_rejected(
     struct Buffer* const, struct Request*,
