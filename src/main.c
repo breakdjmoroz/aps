@@ -12,6 +12,9 @@ const char MESSAGE_USAGE[] = "Usage: model.out N_DEV N_GEN BUF_SIZE STOP_TIME MO
 
 double global_current_time;
 
+void run(const size_t, const size_t,
+    const size_t, const double, const bool);
+
 int main(int argc, char* argv[])
 {
   if (argc != (1 + N_PARAMS))
@@ -31,6 +34,18 @@ int main(int argc, char* argv[])
   const double STOP_TIME    = (double)atof(argv[4]);
   const bool ONESHOT_MODE   = (bool)atoi(argv[5]);
 
+  run(N_DEVICES, N_GENERATORS, BUF_SIZE, STOP_TIME, ONESHOT_MODE);
+
+  return 0;
+}
+
+void run(
+    const size_t N_DEVICES,
+    const size_t N_GENERATORS,
+    const size_t BUF_SIZE,
+    const double STOP_TIME,
+    const bool ONESHOT_MODE)
+{
   size_t i;
   bool is_modeling = true;
   struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
@@ -52,10 +67,11 @@ int main(int argc, char* argv[])
 
   while(is_modeling)
   {
-#if ONESHOT_MODE
-    print_calendar(calendar);
-    print_buffer(mss->buffer);
-#endif
+    if (ONESHOT_MODE)
+    {
+      print_calendar(calendar);
+      print_buffer(mss->buffer);
+    }
 
     struct Event event = get_next_event(calendar, NULL);
     struct Request request;
@@ -111,17 +127,18 @@ int main(int argc, char* argv[])
         }
         break;
     }
-#if ONESHOT_MODE
-    getchar();
-#endif
+    if (ONESHOT_MODE)
+    {
+      getchar();
+    }
   }
 
-#if ONESHOT_MODE
-  print_calendar(calendar);
-  print_buffer(mss->buffer);
-#endif
+  if (ONESHOT_MODE)
+  {
+    print_calendar(calendar);
+    print_buffer(mss->buffer);
+  }
+
   stop_statistic(stat);
   print_statistic(stat);
-
-  return 0;
 }
