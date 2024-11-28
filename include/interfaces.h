@@ -5,8 +5,6 @@
 #include <stdbool.h>
 #include "types.h"
 
-extern const struct Request EMPTY_REQUEST;
-
 extern double global_current_time;
 
 void create_break_event(struct EventCalendar*, double);
@@ -26,6 +24,10 @@ int select_device(const struct MassServiceSystem* const);
 struct MassServiceSystem* new_mss(size_t, size_t);
 struct EventCalendar* new_calendar(size_t, size_t);
 struct Environment* new_env(size_t);
+
+void delete_mss(struct MassServiceSystem*);
+void delete_calendar(struct EventCalendar*);
+void delete_env(struct Environment*);
 
 struct Event get_next_event(const struct EventCalendar* const, bool*);
 void generate_request_for(u32, struct EventCalendar*, struct Request*);

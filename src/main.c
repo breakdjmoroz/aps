@@ -141,4 +141,8 @@ void run(
 
   stop_statistic(stat);
   print_statistic(stat);
+
+  delete_mss(mss);
+  delete_calendar(calendar);
+  delete_env(env);
 }

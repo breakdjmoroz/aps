@@ -327,6 +327,25 @@ struct Environment* new_env(size_t gen_num)
   return env;
 }
 
+void delete_mss(struct MassServiceSystem* mss)
+{
+  free(mss->buffer);
+  free(mss->devices);
+  free(mss);
+}
+
+void delete_calendar(struct EventCalendar* calendar)
+{
+  free(calendar->events);
+  free(calendar);
+}
+
+void delete_env(struct Environment* env)
+{
+  free(env->generators);
+  free(env);
+}
+
 struct Event get_next_event(const struct EventCalendar* const calendar, bool* err)
 {
   size_t i = 0;
