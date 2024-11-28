@@ -9,6 +9,9 @@ extern const struct Request EMPTY_REQUEST;
 
 extern double global_current_time;
 
+void create_break_event(struct EventCalendar*, double);
+bool is_stop_modeling(struct Event);
+
 bool is_equal_requests(struct Request, struct Request);
 bool is_equal_events(struct Event, struct Event);
 

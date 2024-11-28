@@ -20,6 +20,32 @@ double rand_exp(double lambda)
 
 #include "interfaces.h"
 
+const struct Request EMPTY_REQUEST =
+{
+  .gen_number = -1,
+  .gen_time = -1.0,
+  .buf_time = -1.0,
+  .dev_time = -1.0,
+  .is_active = false,
+};
+
+bool is_stop_modeling(struct Event event)
+{
+  return event.type == STOP_MODELING;
+}
+
+void create_break_event(struct EventCalendar* calendar, double break_time)
+{
+  struct Event break_event =
+  {
+    .type = STOP_MODELING,
+    .time_in_sec = break_time,
+    .is_active = true,
+  };
+
+  insert_event(calendar, &break_event);
+}
+
 bool is_equal_requests(struct Request right, struct Request left)
 {
   return (right.gen_number == left.gen_number &&

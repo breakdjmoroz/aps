@@ -6,27 +6,11 @@
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_DEVICES     (1)
-#define N_GENERATORS  (5)
+#define N_DEVICES     (2)
+#define N_GENERATORS  (2)
 #define BUF_SIZE      (2)
-#define STOP_TIME     (2.000)
+#define STOP_TIME     (100.000)
 #define ONESHOT_MODE  (true)
-
-const struct Event BREAK_EVENT =
-{
-  .type = STOP_MODELING,
-  .time_in_sec = STOP_TIME,
-  .is_active = true,
-};
-
-const struct Request EMPTY_REQUEST =
-{
-  .gen_number = -1,
-  .gen_time = -1.0,
-  .buf_time = -1.0,
-  .dev_time = -1.0,
-  .is_active = false,
-};
 
 double global_current_time;
 
@@ -42,7 +26,8 @@ int main()
   start_statistic(stat);
 
   global_current_time = 0.0;
-  insert_event(calendar, &BREAK_EVENT);
+
+  create_break_event(calendar, STOP_TIME);
 
   for (i = 0; i < env->generators_len; ++i)
   {
@@ -63,7 +48,7 @@ int main()
 
     global_current_time = event.time_in_sec;
 
-    if (is_equal_events(event, BREAK_EVENT))
+    if (is_stop_modeling(event))
     {
       is_modeling = false;
       for(size_t i = 0; i < calendar->events_len; ++i)
