@@ -1,5 +1,7 @@
 NAME=model.out
 DBG_NAME=model.dbg
+CONF=model.conf
+
 CC=gcc
 
 INCLUDE=./include
@@ -18,4 +20,4 @@ clean:
 	rm $(BINARY)/*
 
 run:
-	$(BINARY)/$(NAME)
+	$(BINARY)/$(NAME) $$(cat $(CONF) | tail -n1)
