@@ -1,63 +1,51 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "types.h"
 #include "interfaces.h"
 #include "statistic.h"
 
-#define N_PARAMS      (5)
+#define N_DEVICES     (4)
+#define N_EVENTS      (32000)
+#define N_GENERATORS  (30)
+#define BUF_SIZE      (5)
+#define STOP_TIME     (100.000)
 
-const char MESSAGE_USAGE[] = "Usage: model.out N_DEV N_GEN BUF_SIZE STOP_TIME MODE\nN_DEV - amount of devices\nN_GEN - amount of generators\nBUF_SIZE - buffer size\nSTOP_TIME - simulation end time\nMODE - 0 means automatic mode, 1 means oneshot mode\n";
+#define ONESHOT_MODE  (false)
+
+const struct Event BREAK_EVENT =
+{
+  .type = STOP_MODELING,
+  .time_in_sec = STOP_TIME,
+  .is_active = true,
+};
+
+const struct Request EMPTY_REQUEST =
+{
+  .gen_number = -1,
+  .gen_time = -1.0,
+  .buf_time = -1.0,
+  .dev_time = -1.0,
+  .is_active = false,
+};
 
 double global_current_time;
 
-void run(const size_t, const size_t,
-    const size_t, const double, const bool);
-
-int main(int argc, char* argv[])
-{
-  if (argc != (1 + N_PARAMS))
-  {
-    fprintf(stderr, "Your input:\n");
-    for (size_t i = 0; i < argc; ++i)
-    {
-      fprintf(stderr, "%s\n", argv[i]);
-    }
-    fprintf(stderr, "Wrong amount of arguments!\n%s\n", MESSAGE_USAGE);
-    return -1;
-  }
-
-  const size_t N_DEVICES    = (size_t)atoi(argv[1]);
-  const size_t N_GENERATORS = (size_t)atoi(argv[2]);
-  const size_t BUF_SIZE     = (size_t)atoi(argv[3]);
-  const double STOP_TIME    = (double)atof(argv[4]);
-  const bool ONESHOT_MODE   = (bool)atoi(argv[5]);
-
-  run(N_DEVICES, N_GENERATORS, BUF_SIZE, STOP_TIME, ONESHOT_MODE);
-
-  return 0;
-}
-
-void run(
-    const size_t N_DEVICES,
-    const size_t N_GENERATORS,
-    const size_t BUF_SIZE,
-    const double STOP_TIME,
-    const bool ONESHOT_MODE)
+int main()
 {
   size_t i;
   bool is_modeling = true;
+  bool is_generating_request = true;
   struct MassServiceSystem* mss = new_mss(N_DEVICES, BUF_SIZE);
-  struct EventCalendar* calendar = new_calendar(N_GENERATORS, N_DEVICES);
+  struct EventCalendar* calendar = new_calendar(N_EVENTS);
   struct Environment* env = new_env(N_GENERATORS);
 
   struct StatisticTable* stat = new_stat(N_GENERATORS, N_DEVICES);
   start_statistic(stat);
 
   global_current_time = 0.0;
-
-  create_break_event(calendar, STOP_TIME);
+  insert_event(calendar, &BREAK_EVENT);
 
   for (i = 0; i < env->generators_len; ++i)
   {
@@ -67,57 +55,81 @@ void run(
 
   while(is_modeling)
   {
-    if (ONESHOT_MODE)
-    {
-      print_calendar(calendar);
-      print_buffer(mss->buffer);
-    }
-
-    struct Event event = get_next_event(calendar, NULL);
+    struct Event event = get_next_event(calendar);
     struct Request request;
     int device_index;
 
     global_current_time = event.time_in_sec;
 
-    if (is_stop_modeling(event))
+    if (!is_generating_request && is_equal_events(event, BREAK_EVENT))
     {
       is_modeling = false;
-      for(size_t i = 0; i < calendar->events_len; ++i)
-      {
-        calendar->events[i].is_active = false;
-      }
     }
 
     switch(event.type)
     {
       case GET_REQUEST:
         request = event.data.request;
-        generate_request_for(request.gen_number, calendar, NULL);
-
+#if ONESHOT_MODE
+        printf("==========================\n");
+        printf(">>> event: GET_REQUEST\n");
+        printf("time (sec): %lf\n", global_current_time);
+        printf(">>>>>>>>> request: generator's num is %d\n", request.gen_number);
+#endif
+        if(is_generating_request)
+        {
+          generate_request_for(request.gen_number, calendar, NULL);
+        }
         device_index = select_device(mss);
         if (device_index >= 0)
         {
+#if ONESHOT_MODE
+          printf(">>>>>>>>> device [%d]: serve requset immideatly\n", device_index);
+#endif
           serve_a_request(&request, &(mss->devices[device_index]), calendar);
           collect_statistic(stat, &request, SERVED_REQUEST);
         }
         else
         {
+#if ONESHOT_MODE
+          printf(">>>>>>>>> device: send request to buffer\n", device_index);
+#endif
           int err;
           struct Request rejected_request;
           buffer_insert_with_rejected(mss->buffer, &request, &rejected_request, &err);
-          if (is_empty_request(rejected_request))
+          if (!is_equal_requests(rejected_request, EMPTY_REQUEST))
           {
+#if ONESHOT_MODE
+            printf(">>>>>>>>> buffer: reject request under pointer [%d]\n", (mss->buffer->current_index - 1) % mss->buffer->size);
+#endif
             collect_statistic(stat, &rejected_request, REJECTED_REQUEST);
+          }
+          else
+          {
+#if ONESHOT_MODE
+            printf(">>>>>>>>> buffer [%d]: insert a request\n", (mss->buffer->current_index - 1) % mss->buffer->size);
+#endif
           }
         }
         break;
       case DEVICE_FREE:
+#if ONESHOT_MODE
+        printf("==========================\n");
+        printf(">>> event: DEVICE_FREE\n");
+        printf("time (sec): %lf\n", global_current_time);
+#endif
         int err;
         mss->devices[event.data.device.number].is_free = true;
         collect_statistic_device(stat, &(mss->devices[event.data.device.number]), event.data.device.number);
+#if ONESHOT_MODE
+        printf(">>>>>>>>> device [%d]: service finished\n", event.data.device.number);
+#endif
         buffer_extract(mss->buffer, &request, &err);
         if (err == 0)
         {
+#if ONESHOT_MODE
+          printf(">>>>>>>>> buffer [%d]: extract a request\n", (mss->buffer->current_index - 1) % mss->buffer->size);
+#endif
           device_index = select_device(mss);
           if (device_index >= 0)
           {
@@ -125,24 +137,39 @@ void run(
               collect_statistic(stat, &request, SERVED_REQUEST);
           }
         }
+        else if (!is_generating_request)
+        {
+#if ONESHOT_MODE
+          printf(">>>>>>>>> buffer: all requests served\n");
+#endif
+          is_modeling = false;
+        }
+        else
+        {
+#if ONESHOT_MODE
+          printf(">>>>>>>>> device [%d]: halt\n", event.data.device.number);
+#endif
+        }
+        break;
+      case STOP_MODELING:
+#if ONESHOT_MODE
+        printf("==========================\n");
+        printf("||     STOP_MODELING    ||\n");
+        printf("==========================\n");
+        printf("time (sec): %lf\n", global_current_time);
+#endif
+        is_generating_request = false;
         break;
     }
-    if (ONESHOT_MODE)
-    {
-      getchar();
-    }
   }
 
-  if (ONESHOT_MODE)
-  {
-    print_calendar(calendar);
-    print_buffer(mss->buffer);
-  }
+#if ONESHOT_MODE
+  printf(">>> event: END_MODELING\n");
+#endif
 
   stop_statistic(stat);
+
   print_statistic(stat);
 
-  delete_mss(mss);
-  delete_calendar(calendar);
-  delete_env(env);
+  return 0;
 }

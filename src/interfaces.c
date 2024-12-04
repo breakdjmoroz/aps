@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -20,40 +19,21 @@ double rand_exp(double lambda)
 
 #include "interfaces.h"
 
-const struct Request EMPTY_REQUEST =
+bool is_equal_requests(struct Request right, struct Request left)
 {
-  .gen_number = -1,
-  .gen_time = -1.0,
-  .buf_time = -1.0,
-  .dev_time = -1.0,
-  .is_active = false,
-};
-
-bool is_stop_modeling(struct Event event)
-{
-  return event.type == STOP_MODELING;
+  return (right.gen_number == left.gen_number &&
+      right.gen_time == left.gen_time &&
+      right.buf_time == left.buf_time &&
+      right.dev_time == left.dev_time &&
+      right.is_active == left.is_active);
 }
 
-void create_break_event(struct EventCalendar* calendar, double break_time)
+bool is_equal_events(struct Event right, struct Event left)
 {
-  struct Event break_event =
-  {
-    .type = STOP_MODELING,
-    .time_in_sec = break_time,
-    .is_active = true,
-  };
-
-  insert_event(calendar, &break_event);
+  return (right.type == left.type &&
+      right.time_in_sec == left.time_in_sec);
 }
 
-bool is_empty_request(struct Request request)
-{
-  return !(request.gen_number == EMPTY_REQUEST.gen_number &&
-      request.gen_time == EMPTY_REQUEST.gen_time &&
-      request.buf_time == EMPTY_REQUEST.buf_time &&
-      request.dev_time == EMPTY_REQUEST.dev_time &&
-      request.is_active == EMPTY_REQUEST.is_active);
-}
 
 int buffer_insert(struct Buffer* const buffer, struct Request* request)
 {
@@ -61,6 +41,8 @@ int buffer_insert(struct Buffer* const buffer, struct Request* request)
   struct Request rejected_request;
 
   buffer_insert_with_rejected(buffer, request, &rejected_request, &err);
+
+  free(&rejected_request);
 
   return err;
 }
@@ -123,7 +105,7 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
     err = -1;
   }
 
-  for (i = 0; i < buffer->size && !err; ++i)
+  for (i = 0; i < buffer->size; ++i)
   {
     current_index = (current_index + i) % buffer->size;
     if (buffer->requests[current_index].is_active)
@@ -149,7 +131,7 @@ void buffer_extract(struct Buffer* const buffer, struct Request* request, int* c
     }
   }
 
-  if (is_buffer_full && !err)
+  if (is_buffer_full)
   {
     buffer->requests[request_index].buf_time = global_current_time;
     *request = buffer->requests[request_index];
@@ -189,10 +171,9 @@ int select_device(const struct MassServiceSystem* const mss)
   return device_index;
 }
 
-static void allocate_devices(struct Device* devices, size_t devices_len)
+void  allocate_devices(struct Device* devices, size_t devices_len)
 {
-  size_t i;
-
+  size_t i = 0;
   if (devices != NULL)
   {
     for(i = 0; i < devices_len; ++i)
@@ -204,7 +185,7 @@ static void allocate_devices(struct Device* devices, size_t devices_len)
   }
 }
 
-static bool allocate_buffer(struct Buffer* buffer, size_t buf_size)
+bool allocate_buffer(struct Buffer* buffer, size_t buf_size)
 {
   size_t i = 0;
   bool is_allocated = false;
@@ -273,29 +254,29 @@ struct MassServiceSystem* new_mss(size_t devices_len, size_t buf_size)
   return mss;
 }
 
-struct EventCalendar* new_calendar(size_t generators_len, size_t devices_len)
+struct EventCalendar* new_calendar(size_t events_len)
 {
-  size_t events_len = generators_len + devices_len + 1; /* Plus one space for STOP_MODELING */
+  size_t i = 0;
+  bool is_allocated = true;
   struct EventCalendar* calendar = (struct EventCalendar*)malloc(sizeof(struct EventCalendar));
-  struct Event* events = (struct Event*)malloc(sizeof(struct Event) * events_len);
 
-  if (calendar && events)
+  if (calendar != NULL)
   {
-    calendar->generators_len = generators_len;
-    calendar->devices_len = devices_len;
-    calendar->events_len = events_len;
-    calendar->events = events;
-
-    for(size_t i = 0; i < events_len; ++i)
+    calendar->current_index = 0;
+    calendar->events_len=events_len;
+    calendar->events = (struct Event*)malloc(sizeof(struct Event) * events_len);
+    if (calendar->events != NULL)
     {
-      calendar->events[i].is_active = false;
+      for(i = 0; i < events_len; ++i)
+      {
+        calendar->events[i].is_active = false;
+      }
     }
-  }
-
-  if (!events)
-  {
-    free(calendar);
-    calendar = NULL;
+    else
+    {
+      free(calendar);
+      calendar = NULL;
+    }
   }
 
   return calendar;
@@ -327,48 +308,22 @@ struct Environment* new_env(size_t gen_num)
   return env;
 }
 
-void delete_mss(struct MassServiceSystem* mss)
-{
-  free(mss->buffer);
-  free(mss->devices);
-  free(mss);
-}
-
-void delete_calendar(struct EventCalendar* calendar)
-{
-  free(calendar->events);
-  free(calendar);
-}
-
-void delete_env(struct Environment* env)
-{
-  free(env->generators);
-  free(env);
-}
-
-struct Event get_next_event(const struct EventCalendar* const calendar, bool* err)
+struct Event get_next_event(const struct EventCalendar* const calendar)
 {
   size_t i = 0;
   double next_time = DBL_MAX;
   size_t next_time_index = 0;
-  bool is_empty = true;
 
   for (i = 0; i < calendar->events_len; ++i)
   {
     if(calendar->events[i].is_active)
     {
-      is_empty = false;
       if (calendar->events[i].time_in_sec < next_time)
       {
         next_time = calendar->events[i].time_in_sec;
         next_time_index = i;
       }
     }
-  }
-
-  if (err != NULL)
-  {
-    *err = is_empty;
   }
 
   calendar->events[next_time_index].is_active = false;
@@ -425,71 +380,7 @@ void serve_a_request(struct Request* request, struct Device* device, struct Even
 
 void insert_event(struct EventCalendar* calendar, struct Event* event)
 {
-  size_t index = 0;
-
-  switch(event->type)
-  {
-    case GET_REQUEST:
-      index = event->data.request.gen_number;
-      break;
-    case DEVICE_FREE:
-      index = event->data.device.number + calendar->generators_len;
-      break;
-    case STOP_MODELING:
-      index = calendar->events_len - 1;
-      break;
-    default:
-      return;
-      break;
-  }
-  
-  calendar->events[index] = *event;
-}
-
-void print_calendar(const struct EventCalendar* const calendar)
-{
-  printf("Current time (sec): %lf\n", global_current_time);
-  for (size_t i = 0; i < calendar->events_len; ++i)
-  {
-    if (i < calendar->generators_len)
-    {
-      printf("|  Generator[%d] | Next time: %lf | Active flag: %d |\n",
-          i,
-          calendar->events[i].time_in_sec,
-          calendar->events[i].is_active
-          );
-    }
-    else if (i < calendar->devices_len + calendar->generators_len)
-    {
-      printf("|   Device[%d]   | Next time: %lf | Active flag: %d |\n",
-          i - calendar->generators_len,
-          calendar->events[i].time_in_sec,
-          calendar->events[i].is_active
-          );
-    }
-    else
-    {
-      printf("| Stop modeling | Next time: %lf | Active flag: %d |\n",
-          calendar->events[i].time_in_sec,
-          calendar->events[i].is_active
-          );
-    }
-  }
-}
-
-void print_buffer(const struct Buffer* const buf)
-{
-  printf("Buffer: ");
-  for (size_t i = 0; i < buf->size; ++i)
-  {
-    if (buf->requests[i].is_active)
-    {
-      printf("| %d ", buf->requests[i].gen_number);
-    }
-    else
-    {
-      printf("| --- ");
-    }
-  }
-  printf("|\n");
+  size_t i = calendar->current_index;
+  calendar->events[i] = *event;
+  ++calendar->current_index;
 }

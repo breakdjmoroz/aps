@@ -75,8 +75,7 @@ struct EventCalendar
 {
   struct Event* events;
   size_t events_len;
-  size_t devices_len;
-  size_t generators_len;
+  size_t current_index;
 };
 
 #endif

@@ -1,7 +1,5 @@
 NAME=model.out
 DBG_NAME=model.dbg
-CONF=model.conf
-
 CC=gcc
 
 INCLUDE=./include
