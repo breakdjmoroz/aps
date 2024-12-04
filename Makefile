@@ -20,4 +20,4 @@ clean:
 	rm $(BINARY)/*
 
 run:
-	$(BINARY)/$(NAME) $$(cat $(CONF))
+	$(BINARY)/$(NAME) $$(cat $(CONF) | tail -n1)
